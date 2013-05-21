@@ -16,28 +16,29 @@
 
 #### `Addon`
 
-| Field          | Type     |
-| -------------- | -------- |
-| name           | String   |
+| Field             | Type     |
+| ----------------- | -------- |
+| category          | String   |
+| name              | String   |
+| price             | Integer  |
+| availability      | String   |
+| required_stage    | String   |
+| public_at         | Datetime |
 
-#### `AddonPlan`
+#### `AddonSettings`
 
-| Field          | Type     |
-| -------------- | -------- |
-| addon_id       | Integer  |
-| name           | String   |
-| price          | Integer  |
-| availability   | String   |
-| required_stage | String   |
-| public_at      | Datetime |
+| Field     | Type          |
+| --------- | ------------- |
+| addon_id  | Integer       |
+| design_id | Integer       |
+| template  | String (Hash) |
 
-#### `PlayerComponentSettings`
+#### `Kit`
 
-| Field          | Type          |
-| -------------- | ------------- |
-| addon_plan_id  | Integer       |
-| design_id      | Integer       |
-| template       | String (Hash) |
+| Field     | Type          |
+| --------- | ------------- |
+| design_id | Integer       |
+| settings  | String (Hash) |
 
 ### Workflow
 
@@ -50,24 +51,39 @@
 
 #### `Package`
 
-| Field          | Type           |
-| -------------- | -------------- |
-| name           | String         |
-| dependencies   | String (Array) |
+| Field           | Type           |
+| --------------- | -------------- |
+| name            | String         |
+| version         | String         |
+| dependencies    | Text (Array)   |
+| settings        | Text (Hash)    |
 
-#### `PackageVersion`
-
-| Field          | Type     |
-| -------------- | -------- |
-| package_id     | Integer  |
-| version        | String   |
-
-#### `AppMD5`
+#### `AppMd5`
 
 | Field            | Type           |
 | --------------   | -------------- |
 | md5              | String         |
-| package_versions | String (Array) |
+
+#### `AppMd5sPackages`
+
+| Field            | Type           |
+| ---------------- | -------------- |
+| app_md5_id       | Integer        |
+| package_id       | Integer        |
+
+#### `Loader`
+
+| Field            | Type           |
+| --------------   | -------------- |
+| site_token       | String         |
+| app_md5_id       | Integer        |
+
+#### `LoaderTemplate`
+
+| Field            | Type           |
+| --------------   | -------------- |
+| stage            | String         |
+| template         | Text           |
 
 ### Definitions
 
@@ -125,7 +141,8 @@ This worker generates several JS files for a site in the following order:
 5. It check if an AppMD5 exists fot this MD5.
     * If yes, simply use the existing file and the md5.
     * If no, concatenate all the package versions content and insert them
-      in the app template, then upload the file to `/js/app-<md5>.js` and return the md5.
+      in a blank file with the "header" package first! Then upload the file
+      to `/js/app-<md5>.js` and return the md5.
 
 #### Loader generation
 

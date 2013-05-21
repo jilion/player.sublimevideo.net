@@ -42,8 +42,12 @@
 
 ### Workflow
 
-* Each time a site is saved, invokes `SiteComponentsGeneratorWorker` (plsv).
-* Each time a site's kit is saved, invokes `SiteComponentsGeneratorWorker` (plsv).
+* Each time a site is saved or its kits settings are save, invokes
+  `PlayerGeneratorWorker` (plsv) with the `:settings` param.
+* Each time a site's addons are saved, invokes `PlayerGeneratorWorker` (plsv)
+  with the `:addons` param.
+* When a site is archived, invokes `PlayerGeneratorWorker` (plsv)
+  with the `:destroy` param.
 
 ## plsv
 
@@ -78,13 +82,6 @@
 | site_token       | String         |
 | app_md5_id       | Integer        |
 
-#### `LoaderTemplate`
-
-| Field            | Type           |
-| --------------   | -------------- |
-| stage            | String         |
-| template         | Text           |
-
 ### Definitions
 
 #### Package
@@ -105,9 +102,23 @@ A JS file that contains the URL to the App JS file. The URL contains a MD5 of th
 A template JS file containing some code that is common to all generated files.
 For instance, there is a loader template and an app template.
 
+The app template, loader template and settings templates are "special" packages
+that depends on some packages or none.
+
+* The app template must be put at the top of the app file;
+* The loader template must be interpolated with Ruby variables and put in the
+  final loader file.
+* The settings template must be interpolated with Ruby variables and put in the
+  final settings file.
+
+All 3 packages are included in the packages array used to generate the App MD5.
+
 ### Workers
 
-* `SiteComponentsGeneratorWorker`
+* `PlayerGeneratorWorker`
+* `AppFileGeneratorWorker`
+* `LoaderFileGeneratorWorker`
+* `SettingsFileGeneratorWorker`
 
 ### Services
 
@@ -119,11 +130,11 @@ For instance, there is a loader template and an app template.
 
 #### New package upload
 
-The app will expose an API / UI for the player team to upload new package
-versions. Each time a new package version is uploaded, the
-`SiteComponentsGeneratorWorker` worker will be invoked.
+The app will expose an API / UI for the player team to upload new packages.
+Each time a new package version is uploaded, the `PlayerGeneratorWorker` worker
+will be invoked.
 
-#### Site components generator worker `SiteComponentsGeneratorWorker`
+#### Site components generator worker `PlayerGeneratorWorker`
 
 This worker generates several JS files for a site in the following order:
 
@@ -134,10 +145,10 @@ This worker generates several JS files for a site in the following order:
 
 1. `plsv` calls `mysv` to get the list of the site' subscribed add-ons.
 2. From this list of add-ons, it gets the list of packages (from the mapping
-  table `add-on -> packages`).
-3. From the list of packages, it resolve the dependency tree and ends up with a
-  list of package versions.
-4. It then generates a MD5 for this list of package versions (sorted).
+  table `add-on -> packages names`).
+3. From the list of packages names, it resolve the dependency tree and ends up with a
+  list of packages.
+4. It then generates a MD5 for this list of packages (sorted).
 5. It check if an AppMD5 exists fot this MD5.
     * If yes, simply use the existing file and the md5.
     * If no, concatenate all the package versions content and insert them
@@ -150,14 +161,11 @@ This worker generates several JS files for a site in the following order:
 
 #### Settings generation
 
-1. `plsv` calls `mysv` to get the list of the site' subscribed add-on plans.
-2. `plsv` calls `mysv` to get the list of the site's kits.
-3. It inserts the list of kit design + settings (`{ '1': { design: 'flat',
+1. `plsv` calls `mysv` to get the list of the site's kits.
+2. It inserts the list of kit design + settings (`{ '1': { design: 'flat',
   settings: { ... } } }`) in the settings template. It also insert the default
   settings for the add-on plan if these settings are specific for this design.
-4. From this list of add-on plans, it gets the list of default settings not
-  specific to a design and insert them in the settings template.
-5. It then upload the file to `/s2/<token>.js`.
+3. It then upload the file to `/s2/<token>.js`.
 
 ### Notes
 

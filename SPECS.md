@@ -40,9 +40,18 @@
 | design_id | Integer       |
 | settings  | String (Hash) |
 
+### Workers
+
+* `PlayerGeneratorWorker` (noop, delegated to `plsv`)
+
+### Private APIs
+
+* `/private_api/sites/:token/addons?subscribed=true`
+* `/private_api/sites/:token/kits`
+
 ### Workflow
 
-* Each time a site is saved or its kits settings are save, invokes
+* Each time a site is saved or its kits settings are saved, invokes
   `PlayerGeneratorWorker` (plsv) with the `:settings` param.
 * Each time a site's addons are saved, invokes `PlayerGeneratorWorker` (plsv)
   with the `:addons` param.
@@ -95,7 +104,8 @@ A JS file that is the concatenation of all the packages needed by a site.
 
 #### Loader
 
-A JS file that contains the URL to the App JS file. The URL contains a MD5 of the packages + versions bundled in the file.
+A JS file that contains the URL to the App JS file. The URL contains a MD5 of
+the packages + versions bundled in the file.
 
 #### Template
 
@@ -134,30 +144,32 @@ The app will expose an API / UI for the player team to upload new packages.
 Each time a new package version is uploaded, the `PlayerGeneratorWorker` worker
 will be invoked.
 
-#### Site components generator worker `PlayerGeneratorWorker`
+#### PlayerGeneratorWorker
 
-This worker generates several JS files for a site in the following order:
+This worker delegates to several workers:
 
-1. App file & Settings file (can be done in parallel)
-2. Loader file (can only be done once the app file is generated / checked)
+1. `AppFileGeneratorWorker` & `SettingsFileGenerator` file (can be done in
+  parallel)
+2. `LoaderFileGenerator` (can only be done once the app file is generated /
+  checked)
 
-#### App file generation `AppFileGenerator`
+#### AppFileGenerator
 
 1. `plsv` calls `mysv` to get the list of the site' subscribed add-ons.
 2. From this list of add-ons, it gets the list of packages (from the mapping
   table `add-on -> packages names`).
-3. From the list of packages names, it resolve the dependency tree and ends up with a
-  list of packages.
-4. It then generates a MD5 for this list of packages (sorted).
-5. It check if an AppMD5 exists fot this MD5.
-    * If yes, simply use the existing file and the md5.
+3. From the list of packages names, it resolve the dependency tree and ends up
+  with a list of packages.
+4. It then generates a `md5` for this list of packages (sorted).
+5. It check if an `AppMd5` exists fot this `md5`.
+    * If yes, simply use the existing file and the `md5`.
     * If no, concatenate all the package versions content and insert them
       in a blank file with the "header" package first! Then upload the file
-      to `/js/app-<md5>.js` and return the md5.
+      to `/js/app-<md5>.js` and return the `md5`.
 
-#### Loader generation
+#### LoaderFileGenerator
 
-1. Insert the md5 from the app generation step into the loader template.
+1. Insert the `md5` from the app generation step into the loader template.
 
 #### Settings generation
 
@@ -170,6 +182,6 @@ This worker generates several JS files for a site in the following order:
 ### Notes
 
 * The new settings will list only once the default values for each add-on
-(instead) of listing them per kit.
+  (instead) of listing them per kit.
 * The path for the new settings file will be `/s2` to ensure a smooth transition
-from the old to the new settings.
+  from the old to the new settings.

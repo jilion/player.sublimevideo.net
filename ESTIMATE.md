@@ -1,4 +1,4 @@
-# Specs
+# Estimate
 
 ## mysv
 
@@ -6,8 +6,8 @@
 | -------------------------------------- | ---- |
 | Models and associated logic            | 4    |
 | Transition from old models to new ones | 2    |
-| Worker                                 | 1    |
 | Private APIs                           | 2    |
+| Worker                                 | 1    |
 | New workflow implementation            | 2    |
 | **TOTAL**                              | *11* |
 

@@ -155,9 +155,11 @@ This worker delegates to several workers:
 
 #### AppFileGenerator
 
-1. `plsv` calls `mysv` to get the list of the site' subscribed add-ons.
-2. From this list of add-ons, it gets the list of packages (from the mapping
-  table `add-on -> packages names`).
+1. `plsv` calls `mysv` to get the list of the site' subscribed add-ons & kits.
+2. From this list of add-ons and designs (from kits), it gets the list of
+  packages (from the mapping table `add-on -> packages names`). The rule is to
+  look for packages `<design>.<addon>` and if it cannot be found, returns the
+  `<addon>` package instead.
 3. From the list of packages names, it resolve the dependency tree and ends up
   with a list of packages.
 4. It then generates a `md5` for this list of packages (sorted).

@@ -2,7 +2,7 @@
 
 ## mysv
 
-### Models
+### Models [implemented]
 
 #### `Design`
 
@@ -14,18 +14,7 @@
 | required_stage | String   |
 | public_at      | Datetime |
 
-#### `Addon`
-
-| Field             | Type     |
-| ----------------- | -------- |
-| category          | String   |
-| name              | String   |
-| price             | Integer  |
-| availability      | String   |
-| required_stage    | String   |
-| public_at         | Datetime |
-
-#### `AddonSettings`
+#### `AddonPlanSettings`
 
 | Field     | Type          |
 | --------- | ------------- |
@@ -44,9 +33,9 @@
 
 * `PlayerGeneratorWorker` (noop, delegated to `plsv`)
 
-### Private APIs
+### Private APIs [implemented]
 
-* `/private_api/sites/:token/addons?subscribed=true`
+* `/private_api/sites/:token/addons?state=subscribed`
 * `/private_api/sites/:token/kits`
 
 ### Workflow

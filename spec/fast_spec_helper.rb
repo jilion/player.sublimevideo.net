@@ -6,15 +6,30 @@ end
 
 ENV['RAILS_ENV'] ||= 'test'
 
-TestEnv = Struct.new(:env) do
+require 'bundler/setup'
+require 'dotenv'
+Dotenv.load
+require_relative 'config/rspec'
+
+FakeEnv = Struct.new(:env) do
   def to_s; env end
   def test?; env == 'test' end
 end
 
+# def force_define_rails!
+#   puts "Let's define Rails..."
+#   Rails.stub(:root) { Pathname.new(File.expand_path('')) }
+#   Rails.stub(:env) { FakeEnv.new('test') }
+# end
+
 unless defined?(Rails)
-  module Rails
-    def self.root; Pathname.new(File.expand_path('')); end
-    def self.env; TestEnv.new('test') end
+  RSpec.configure do |config|
+    config.before :each do
+      Rails = mock('Rails')
+      Rails.stub(:root) { Pathname.new(File.expand_path('')) }
+      Rails.stub(:env) { FakeEnv.new('test') }
+      # force_define_rails!
+    end
   end
 end
 
@@ -25,8 +40,3 @@ unless defined?(Librato)
     end
   end
 end
-
-require 'bundler/setup'
-require 'dotenv'
-Dotenv.load
-require_relative 'config/rspec'

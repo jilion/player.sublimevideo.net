@@ -6,6 +6,6 @@ class SettingsFileGeneratorWorker
   sidekiq_options queue: 'player'
 
   def perform(site_token)
-    SettingsFileGenerator.new(site_token).generate_and_upload
+    SettingsFileGenerator.new(Site.find(site_token)).generate_and_upload
   end
 end

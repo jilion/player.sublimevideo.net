@@ -3,7 +3,7 @@ require 'rails/railtie'
 require 'carrierwave'
 require 'zip/zip'
 require 'fog'
-require 'config/carrierwave'
+require 'config/carrierwave' # for fog_mock
 require 'support/fixtures_helpers'
 
 require 'uploaders/package_uploader'

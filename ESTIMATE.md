@@ -16,9 +16,9 @@
 | Description                            | Days |
 | -------------------------------------- | ---- |
 | Models and associated logic            | 4    |
-| Transition from old models to new ones | 2    |
-| Worker                                 | 6    |
-| Services                               | 5    |
-| **TOTAL**                              | *17* |
+| Workers                                | 1    |
+| Services                               | 6    |
+| Upload API                             | 2    |
+| **TOTAL**                              | *13* |
 
-**TOTAL:** 11 + 17 = 28 days =~ 5.6 weeks =~ 1.4 month
+**TOTAL:** 11 + 13 = 24 days =~ 4.8 weeks =~ 1.2 month

@@ -41,10 +41,10 @@
 ### Workflow
 
 * Each time a site is saved or its kits settings are saved, invokes
-  `PlayerGeneratorWorker` (plsv) with the `:settings` param.
-* Each time a site's addons are saved, invokes `PlayerGeneratorWorker` (plsv)
+  `PlayerFilesGeneratorWorker` (plsv) with the `:settings` param.
+* Each time a site's addons are saved, invokes `PlayerFilesGeneratorWorker` (plsv)
   with the `:addons` param.
-* When a site is archived, invokes `PlayerGeneratorWorker` (plsv)
+* When a site is archived, invokes `PlayerFilesGeneratorWorker` (plsv)
   with the `:destroy` param.
 
 ## plsv

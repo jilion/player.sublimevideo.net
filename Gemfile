@@ -1,0 +1,49 @@
+source 'https://rubygems.org'
+source 'https://8dezqz7z7HWea9vtaFwg@gem.fury.io/me/' # thibaud@jilion.com account
+
+ruby '2.0.0'
+
+gem 'rails', '4.0.0.rc1'
+gem 'sublime_video_private_api', '~> 1.4'
+
+# Databases
+gem 'pg'
+
+gem 'sidekiq'
+
+gem 'fog'
+gem 'carrierwave'
+
+gem 'rubyzip', require: 'zip/zip'
+
+# Gems used only for assets and not required
+# in production environments by default.
+# group :assets do
+#   gem 'sass-rails',   '~> 3.2.3'
+#   gem 'coffee-rails', '~> 3.2.1'
+#
+#   # See https://github.com/sstephenson/execjs#readme for more supported runtimes
+#   # gem 'therubyracer', :platforms => :ruby
+#
+#   gem 'uglifier', '>= 1.0.3'
+# end
+#
+# gem 'jquery-rails'
+
+group :staging, :production do
+  gem 'unicorn'
+end
+
+group :development, :test do
+  gem 'dotenv-rails'
+end
+
+group :test do
+  gem 'rspec-rails'
+  gem 'shoulda-matchers'
+end
+
+group :tools do
+  gem 'guard-rspec'
+  gem 'ruby_gntp'
+end

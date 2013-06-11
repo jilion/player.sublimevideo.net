@@ -1,0 +1,40 @@
+<%
+  # http://mislav.uniqpath.com/rails/branching-the-database-along-with-your-code/
+  branch = `git symbolic-ref HEAD 2>/dev/null`.chomp.sub('refs/heads/', '')
+  use_database = `git config branch.#{branch}.database`.chomp
+  suffix = if use_database == 'true'
+    branch
+  elsif use_database.present?
+    use_database
+  else
+    "master"
+  end
+%>
+
+development:
+  adapter: postgresql
+  encoding: utf8
+  database: plsv_development_<%= suffix %>
+  pool: 25
+  host: localhost
+
+test:
+  adapter: postgresql
+  encoding: utf8
+  database: plsv_test_<%= suffix %>
+  pool: 25
+  host: localhost
+
+staging:
+  adapter: postgresql
+  encoding: utf8
+  database: plsv_staging
+  pool: 25
+  host: localhost
+
+production:
+  adapter: postgresql
+  encoding: utf8
+  database: plsv_development_<%= suffix %>
+  pool: 25
+  host: localhost

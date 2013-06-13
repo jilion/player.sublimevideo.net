@@ -1,7 +1,4 @@
-require 'fast_spec_helper'
-require 'support/private_api_helpers'
-
-require 'kit'
+require 'spec_helper'
 
 describe Kit do
   let(:site_token) { 'site_token' }

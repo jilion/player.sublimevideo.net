@@ -1,26 +1,19 @@
 require 'fast_spec_helper'
-require 'settings_file_generator'
 
-# force_define_rails!
+require 'settings_file_generator'
 
 describe SettingsFileGenerator do
   let(:site) do
-    Site.new('token' => 'abcd1234',
-            'hostname' => 'google.com',
-            'extra_hostnames' => 'google.fr, google.ch',
-            'staging_hostnames' => 'staging.google.com',
-            'dev_hostnames' => 'staging.google.com',
-            'path' => 'foo',
-            'wildcard' => true,
-            'accessible_stage' => 'stable',
-            'default_kit_id' => 1)
+    mock('Site', token: 'abcd1234', hostname: 'google.com',
+                 extra_hostnames: 'google.fr, google.ch',
+                 staging_hostnames: 'staging.google.com',
+                 dev_hostnames: 'staging.google.com',
+                 path: 'foo', wildcard: true, accessible_stage: 'stable',
+                 default_kit_id: 1)
   end
   let(:kit) do
-    Kit.new('design' => { 'name' => 'Classic' },
-            'id' => 1,
-            'identifier' => 'foo',
-            'name' => 'Foo player',
-            'settings' => {})
+    mock('Kit', design: { 'name' => 'Classic' }, id: 1, identifier: 'foo',
+                name: 'Foo player', settings: {})
   end
   let(:service) { described_class.new(site) }
 

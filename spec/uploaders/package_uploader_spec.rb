@@ -10,19 +10,20 @@ require 'uploaders/package_uploader'
 
 describe PackageUploader, :fog_mock do
   let(:package)  { stub(name: 'app', version: '1.0.0') }
-  let(:zip_name) { "#{package.name}-#{package.version}.zip" }
+  let(:package_name) { "#{package.name}-#{package.version}" }
+  let(:zip_name) { "#{package_name}.zip" }
   let(:zip) do
-    Zip::ZipFile.open(Rails.root.join('spec/fixtures', zip_name), Zip::ZipFile::CREATE) do |zipfile|
-      zipfile.add('package.json', fixture_file('package.json'))
-      zipfile.add('settings.js', fixture_file('settings.js'))
-      zipfile.add('app.js', fixture_file('app.js'))
+    Zip::ZipFile.open(Rails.root.join('spec/fixtures', 'packages', package_name, zip_name), Zip::ZipFile::CREATE) do |zipfile|
+      zipfile.add('package.json', fixture_file(File.join('packages', package_name, 'package.json')))
+      zipfile.add('settings.js', fixture_file(File.join('packages', package_name, 'settings.js')))
+      zipfile.add('app.js', fixture_file(File.join('packages', package_name, 'main.js')))
     end
-    fixture_file(zip_name)
+    fixture_file(File.join('packages', package_name, zip_name))
   end
   let(:uploader) { described_class.new(package, :zip) }
 
   before { uploader.store!(zip) }
-  after { File.delete(fixture_file(zip_name)) }
+  after { File.delete(fixture_file(File.join('packages', package_name, zip_name))) }
 
   it 'saves the file in the right bucket' do
     uploader.fog_directory.should eq ENV['S3_PACKAGES_BUCKET']

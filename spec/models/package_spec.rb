@@ -35,24 +35,24 @@ describe Package do
     let(:addons) { [stub(name: 'lightbox'), stub(name: 'logo')] }
 
     it 'retrieves all the latest stable packages for the given addons' do
-      described_class.packages_from_addons(addons).should eq [@lightbox_package_1s, @logo_package_1s]
+      described_class.packages_from_addons('classic', addons).should eq [@lightbox_package_1s, @logo_package_1s]
     end
 
     context 'given the "alpha" stage' do
       it 'retrieves all the packages for the given addons and stage' do
-        described_class.packages_from_addons(addons, 'alpha').should eq [@lightbox_package_2a, @lightbox_package_1s, @lightbox_package_1b, @lightbox_package_1a, @logo_package_2b, @logo_package_2a, @logo_package_1s, @logo_package_1b, @logo_package_1a]
+        described_class.packages_from_addons('classic', addons, 'alpha').should eq [@lightbox_package_2a, @lightbox_package_1s, @lightbox_package_1b, @lightbox_package_1a, @logo_package_2b, @logo_package_2a, @logo_package_1s, @logo_package_1b, @logo_package_1a]
       end
     end
 
     context 'given the "beta" stage' do
       it 'retrieves all the packages for the given addons and stage' do
-        described_class.packages_from_addons(addons, 'beta').should eq [@lightbox_package_1s, @lightbox_package_1b, @logo_package_2b, @logo_package_1s, @logo_package_1b]
+        described_class.packages_from_addons('classic', addons, 'beta').should eq [@lightbox_package_1s, @lightbox_package_1b, @logo_package_2b, @logo_package_1s, @logo_package_1b]
       end
     end
 
     context 'given the "stable" stage' do
       it 'retrieves all the packages for the given addons and stage' do
-        described_class.packages_from_addons(addons, 'stable').should eq [@lightbox_package_1s, @logo_package_1s]
+        described_class.packages_from_addons('classic', addons, 'stable').should eq [@lightbox_package_1s, @logo_package_1s]
       end
     end
   end

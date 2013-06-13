@@ -1,6 +1,6 @@
 require 'fast_spec_helper'
 
-require 'package_dependencies_solver'
+require 'packages_dependencies_solver'
 
 Package = Class.new unless defined? Package
 
@@ -8,9 +8,7 @@ def create_package(name, version, dependencies = {})
   mock("#{name}-#{version}", name: name, version: version, dependencies: {})
 end
 
-describe PackageDependenciesSolver do
-  let!(:site) { stub }
-
+describe PackagesDependenciesSolver do
   let!(:app_100)       { create_package('app', '1.0.0') }
   let!(:app_200alpha1) { create_package('app', '2.0.0-alpha.1') }
   let!(:app_200beta1)  { create_package('app', '2.0.0-beta.1') }
@@ -31,29 +29,27 @@ describe PackageDependenciesSolver do
 
   describe '.dependencies' do
     context 'when stage is "stable"' do
+      let(:initial_packages) { [] }
       before do
         Package.should_receive(:app_packages).with('stable') { [app_200, app_100] }
       end
 
-      context 'when site has 0 packages' do
-        before { site.should_receive(:packages).with('stable') { [] } }
-
+      context 'with no packages' do
         it 'depends on the latest stable "app" package' do
-          described_class.dependencies(site, 'stable').should eq('app' => '2.0.0')
+          described_class.dependencies(initial_packages, 'stable').should eq('app' => '2.0.0')
         end
       end
 
-      context 'when site has the "app" package with no dependencies' do
-        before { site.should_receive(:packages).with('stable') { [app_100] } }
-
+      context 'when the "app" package with no dependencies' do
+        let(:initial_packages) { [app_100] }
         it 'depends only once on the latest stable "app" package' do
-          described_class.dependencies(site, 'stable').should eq('app' => '2.0.0')
+          described_class.dependencies(initial_packages, 'stable').should eq('app' => '2.0.0')
         end
       end
 
-      context 'when site has packages' do
+      context 'when several packages' do
+        let(:initial_packages) { [logo_110, logo_100] }
         before do
-          site.should_receive(:packages).with('stable') { [logo_110, logo_100] }
           Package.stub(:packages_for_name).with('app', 'stable') { [app_200, app_100] }
           Package.stub(:packages_for_name).with('stats', 'stable') { [stats_200, stats_100] }
           Package.stub(:packages_for_name).with('embed', 'stable') { [embed_200, embed_100] }
@@ -61,7 +57,7 @@ describe PackageDependenciesSolver do
 
         context 'with no dependencies' do
           it 'depends on the latest stable "app" & "logo" packages' do
-            described_class.dependencies(site, 'stable').should eq('app' => '2.0.0', 'logo' => '1.1.0')
+            described_class.dependencies(initial_packages, 'stable').should eq('app' => '2.0.0', 'logo' => '1.1.0')
           end
         end
 
@@ -72,7 +68,7 @@ describe PackageDependenciesSolver do
           end
 
           it 'depends on the "app 1.0.0" package & the latest stable "logo" package' do
-            described_class.dependencies(site, 'stable').should eq('app' => '1.0.0', 'logo' => '1.1.0')
+            described_class.dependencies(initial_packages, 'stable').should eq('app' => '1.0.0', 'logo' => '1.1.0')
           end
         end
 
@@ -83,7 +79,7 @@ describe PackageDependenciesSolver do
           end
 
           it 'depends on the "app 1.0.0" package & the latest stable "logo" package' do
-            described_class.dependencies(site, 'stable').should eq('app' => '1.0.0', 'logo' => '1.0.0')
+            described_class.dependencies(initial_packages, 'stable').should eq('app' => '1.0.0', 'logo' => '1.0.0')
           end
         end
 
@@ -95,7 +91,7 @@ describe PackageDependenciesSolver do
           end
 
           it 'depends on all dependencies' do
-            described_class.dependencies(site, 'stable').should eq('app' => '1.0.0', 'logo' => '1.1.0', 'stats' => '2.0.0')
+            described_class.dependencies(initial_packages, 'stable').should eq('app' => '1.0.0', 'logo' => '1.1.0', 'stats' => '2.0.0')
           end
         end
 
@@ -107,7 +103,7 @@ describe PackageDependenciesSolver do
           end
 
           it 'do not depend on the impossible dependency' do
-            described_class.dependencies(site, 'stable').should eq('app' => '1.0.0', 'logo' => '1.1.0', 'stats' => '1.0.0')
+            described_class.dependencies(initial_packages, 'stable').should eq('app' => '1.0.0', 'logo' => '1.1.0', 'stats' => '1.0.0')
           end
         end
 
@@ -119,7 +115,7 @@ describe PackageDependenciesSolver do
           end
 
           it 'depends on all dependencies' do
-            described_class.dependencies(site, 'stable').should eq('app' => '1.0.0', 'logo' => '1.1.0', 'stats' => '2.0.0', 'embed' => '1.0.0')
+            described_class.dependencies(initial_packages, 'stable').should eq('app' => '1.0.0', 'logo' => '1.1.0', 'stats' => '2.0.0', 'embed' => '1.0.0')
           end
         end
 
@@ -132,7 +128,7 @@ describe PackageDependenciesSolver do
           end
 
           it 'do not depend on the new version' do
-            described_class.dependencies(site, 'stable').should eq('app' => '1.0.0', 'logo' => '1.0.0')
+            described_class.dependencies(initial_packages, 'stable').should eq('app' => '1.0.0', 'logo' => '1.0.0')
           end
         end
 
@@ -145,16 +141,16 @@ describe PackageDependenciesSolver do
           end
 
           it 'raise Solve::Errors::NoSolutionError' do
-            expect { described_class.dependencies(site, 'stable') }.to raise_error(Solve::Errors::NoSolutionError)
+            expect { described_class.dependencies(initial_packages, 'stable') }.to raise_error(Solve::Errors::NoSolutionError)
           end
         end
       end
     end
 
     context 'with stage is "beta"' do
+      let(:initial_packages) { [logo_200beta1, logo_110, logo_100] }
       before do
         Package.should_receive(:app_packages).with('beta') { [app_200, app_200beta1, app_100] }
-        site.should_receive(:packages).with('beta') { [logo_200beta1, logo_110, logo_100] }
         Package.stub(:packages_for_name).with('app', 'beta') { [app_200, app_200beta1, app_100] }
         Package.stub(:packages_for_name).with('logo', 'beta') { [logo_200beta1, logo_110, logo_100] }
       end
@@ -168,28 +164,26 @@ describe PackageDependenciesSolver do
         end
 
         it 'depends on all beta dependencies' do
-          described_class.dependencies(site, 'beta').should eq('app' => '2.0.0-beta.1', 'logo' => '2.0.0-beta.1')
+          described_class.dependencies(initial_packages, 'beta').should eq('app' => '2.0.0-beta.1', 'logo' => '2.0.0-beta.1')
         end
       end
     end
 
     context 'with stage is "alpha"' do
+      let(:initial_packages) { [support_100alpha1] }
       before do
         Package.should_receive(:app_packages).with('alpha') { [app_200, app_200beta1, app_200alpha1, app_100] }
-        site.should_receive(:packages).with('alpha') { [support_100alpha1] }
         Package.stub(:packages_for_name).with('app', 'alpha') { [app_200, app_200beta1, app_200alpha1, app_100] }
         Package.stub(:packages_for_name).with('support', 'alpha') { [support_100alpha1] }
       end
 
-      context 'with one other site components dependency' do
-        context 'with app component dependency and another dependency with another dependency' do
-          before do
-            support_100alpha1.stub(:dependencies) { { 'app' => '1.0.0' } }
-          end
+      context 'with simple dependencies' do
+        before do
+          support_100alpha1.stub(:dependencies) { { 'app' => '1.0.0' } }
+        end
 
-          it 'depends on all dependencies' do
-            described_class.dependencies(site, 'alpha').should eq('app' => '1.0.0', 'support' => '1.0.0-alpha.1')
-          end
+        it 'depends on all dependencies' do
+          described_class.dependencies(initial_packages, 'alpha').should eq('app' => '1.0.0', 'support' => '1.0.0-alpha.1')
         end
       end
     end

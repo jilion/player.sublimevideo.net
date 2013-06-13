@@ -1,5 +1,3 @@
-require 'site'
-require 'kit'
 require 'cdn_file'
 
 class SettingsFileGenerator
@@ -11,7 +9,7 @@ class SettingsFileGenerator
   end
 
   def generate_and_upload
-    cdn_file.upload!
+    cdn_file.upload
     _increment_librato('update')
   end
 
@@ -24,7 +22,10 @@ class SettingsFileGenerator
   end
 
   def kits
+    # addons = ...
     site.kits.reduce({}) do |hash, kit|
+      # addons.each
+      # package = kit.design + addons
       hash[kit.identifier] = {}
       hash[kit.identifier][:skin] = { module: kit.design.skin_mod }
       hash[kit.identifier][:plugins] = _kits_plugins(kit, nil, with_module)
@@ -36,11 +37,8 @@ class SettingsFileGenerator
     site.default_kit.identifier
   end
 
-  # TODO
-  #
   def format(hash)
-    hash
-    # SettingsFormatter.format(hash)
+    SettingsFormatter.format(hash)
   end
 
   def cdn_file
@@ -71,7 +69,7 @@ class SettingsFileGenerator
   end
 
   def _increment_librato(action)
-    Librato.increment "settings.#{action}"
+    Librato.increment "player.#{action}", source: 'settings'
   end
 
 end

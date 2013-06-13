@@ -16,9 +16,18 @@ FakeEnv = Struct.new(:env) do
   def test?; env == 'test' end
 end
 
+unless defined?(Rails)
+  module Rails
+    def self.root; Pathname.new(File.expand_path('')); end
+    def self.env; FakeEnv.new('test'); end
+  end
+  puts "Let's define Rails... => #{Rails.root}"
+end
+
 RSpec.configure do |config|
   config.before :each do
     unless defined?(Rails)
+      puts "Let's define Rails again..."
       Rails = mock('Rails')
       Rails.stub(:root) { Pathname.new(File.expand_path('')) }
       Rails.stub(:env) { FakeEnv.new('test') }

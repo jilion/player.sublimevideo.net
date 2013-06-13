@@ -7,14 +7,14 @@ class CDNFile
     @headers = headers
   end
 
-  def upload!
+  def upload
     File.open(file) do |f|
       data = f.read
       S3Wrapper.fog_connection.put_object(bucket, path, data, headers)
     end
   end
 
-  def delete!
+  def delete
     S3Wrapper.fog_connection.delete_object(bucket, path)
   end
 

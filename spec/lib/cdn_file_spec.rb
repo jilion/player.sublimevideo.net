@@ -17,15 +17,15 @@ describe CDNFile, :fog_mock do
   } }
   let(:cdn_file) { CDNFile.new(file, path, headers) }
 
-  describe "#upload!" do
+  describe "#upload" do
     it "uploads files" do
       cdn_file.should_not be_present
-      cdn_file.upload!
+      cdn_file.upload
       cdn_file.should be_present
     end
 
     describe "s3 object(s)" do
-      before { cdn_file.upload! }
+      before { cdn_file.upload }
       let(:bucket) { cdn_file.bucket }
 
       it "is public" do
@@ -50,28 +50,28 @@ describe CDNFile, :fog_mock do
 
     describe "respond" do
       it "is true when file wasn't present before" do
-        cdn_file.upload!.should be_true
+        cdn_file.upload.should be_true
       end
 
       it "is true when an other file is present" do
-        cdn_file.upload!
+        cdn_file.upload
         cdn_file.file = file2
-        cdn_file.upload!.should be_true
+        cdn_file.upload.should be_true
       end
     end
   end
 
-  describe "#delete!" do
+  describe "#delete" do
     context "with file present" do
-      before { cdn_file.upload! }
+      before { cdn_file.upload }
 
       it "remove S3 object" do
-        cdn_file.delete!
+        cdn_file.delete
         cdn_file.should_not be_present
       end
 
       it "returns true" do
-        cdn_file.delete!.should be_true
+        cdn_file.delete.should be_true
       end
     end
   end

@@ -33,4 +33,7 @@ PlayerSublimevideo::Application.configure do
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
+
+  # Use a different cache store in test
+  config.cache_store = :null_store
 end

@@ -24,13 +24,9 @@ class SettingsFileGenerator
   end
 
   def kits
-    Kit.all(site_token: token).reduce({}) do |hash, kit|
+    site.kits.reduce({}) do |hash, kit|
       hash[kit.identifier] = {}
-      hash[kit.identifier][:skin] = if with_module
-        { module: kit.skin_mod }
-      else
-        { id: kit.skin_token }
-      end
+      hash[kit.identifier][:skin] = { module: kit.design.skin_mod }
       hash[kit.identifier][:plugins] = _kits_plugins(kit, nil, with_module)
       hash
     end

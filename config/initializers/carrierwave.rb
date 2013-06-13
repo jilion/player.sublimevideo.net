@@ -25,7 +25,7 @@ module CarrierWave
   end
 end
 
-case Rails.env
+case ENV['RAILS_ENV'] || Rails.env
 when 'test'
   CarrierWave.file_configuration
 else

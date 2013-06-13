@@ -3,7 +3,8 @@ source 'https://8dezqz7z7HWea9vtaFwg@gem.fury.io/me/' # thibaud@jilion.com accou
 
 ruby '2.0.0'
 
-gem 'rails', '4.0.0.rc1'
+gem 'rails', '4.0.0.rc2'
+gem 'serialize-rails'
 gem 'sublime_video_private_api', '~> 1.4'
 
 # Databases
@@ -15,6 +16,8 @@ gem 'fog'
 gem 'carrierwave'
 
 gem 'rubyzip', require: 'zip/zip'
+
+gem 'solve'
 
 # Gems used only for assets and not required
 # in production environments by default.
@@ -38,12 +41,14 @@ group :development, :test do
   gem 'dotenv-rails'
 end
 
+group :development do
+  gem 'guard-rspec'
+  gem 'ruby_gntp'
+end
+
 group :test do
   gem 'rspec-rails'
   gem 'shoulda-matchers'
-end
-
-group :tools do
-  gem 'guard-rspec'
-  gem 'ruby_gntp'
+  gem 'factory_girl_rails' # loaded in spec_helper Spork.each_run
+  gem 'database_cleaner'
 end

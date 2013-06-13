@@ -87,14 +87,54 @@
 Zip file that contains one or several JS files and assets and which has
 dependencies (declared in a `package.json` file) on other packages.
 
+##### Structure
+
+```
+- classic-player-controls
+   +- addon_settings
+   |  +- controls.rb
+   `- package.json
+   `- main.js
+```
+
+Generated settings from this package would be:
+
+```
+classic-player-controls: {
+  controls: { ... }
+}
+```
+
+
+```
+- sony-player
+   +- addon_settings
+   |  +- controls.rb
+   |  +- subtitles.rb
+   `- package.json
+   `- main.js
+```
+
+Generated settings from this package would be:
+
+```
+sony-player: {
+  controls: { ... },
+  subtitles: { ... }
+}
+```
+
 #### App
 
 A JS file that is the concatenation of all the packages needed by a site.
 
 #### Loader
 
-A JS file that contains the URL to the App JS file. The URL contains a MD5 of
-the packages + versions bundled in the file.
+A JS file that contains the URL to the App JS file. The URL contains app-<md5>.js.
+
+#### Settings
+
+A JS file that contains the settings
 
 #### Template
 
@@ -124,6 +164,19 @@ All 3 packages are included in the packages array used to generate the App MD5.
 * `AppFileGenerator`
 * `LoaderFileGenerator`
 * `SettingsFileGenerator`
+
+### Design + Addon => Package map
+
+A map will link a design + addon to a package, i.e.:
+
+| Design           | Addon           | Package                  |
+| --------------   | --------------- | ------------------------ |
+| classic          | controls        | classic-player-controls  |
+| flat             | controls        | floating-player-controls |
+| sony             | controls        | sony-player              |
+| sony             | lightbox        | sony-player              |
+
+Typically, custom players will have only one package.
 
 ### Workflow
 

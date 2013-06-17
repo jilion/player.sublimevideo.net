@@ -5,7 +5,7 @@ class SettingsFileGeneratorWorker
   include Sidekiq::Worker
   sidekiq_options queue: 'player'
 
-  def perform(site_token)
-    SettingsFileGenerator.new(Site.find(site_token)).generate_and_upload
+  def perform(site_token, options = {})
+    SettingsFileGenerator.update(site_token, options)
   end
 end

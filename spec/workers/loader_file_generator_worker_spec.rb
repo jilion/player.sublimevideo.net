@@ -13,8 +13,7 @@ describe LoaderFileGeneratorWorker do
   end
 
   it 'calls AppFileGenerator' do
-    LoaderFileGenerator.should_receive(:new) { generator }
-    generator.should_receive(:generate_and_upload)
+    LoaderFileGenerator.should_receive(:update).with('abcd1234', {})
 
     described_class.new.perform('abcd1234')
   end

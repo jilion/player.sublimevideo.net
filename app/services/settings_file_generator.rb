@@ -1,18 +1,42 @@
+require 'stage'
 require 'cdn_file'
+require 'settings_formatter'
 
 class SettingsFileGenerator
 
-  attr_reader :site
+  attr_reader :site, :stage, :options
 
-  def initialize(site)
-    @site = site
+  def initialize(site, stage, options = {})
+    @site, @stage, @options = site, stage, options
   end
 
-  def generate_and_upload
+  def self.update(site_token, options = {})
+    site = Site.find(site_token)
+
+    Array(options.delete(:stage) { Stage.stages }).each do |stage|
+      new(site, stage, options).update
+    end
+  end
+
+  def update
+    if options[:delete]
+      delete
+    else
+      generate
+    end
+  end
+
+  def generate
     cdn_file.upload
     _increment_librato('update')
   end
 
+  def delete
+    CDNFile.new(nil, _path, nil).delete
+    _increment_librato('delete')
+  end
+
+  # TODO
   def license
     hash = { hosts: [site.hostname], wildcard: site.wildcard, path: site.path, stage: site.accessible_stage }
     hash[:hosts]        += (site.extra_hostnames || '').split(/,\s*/)
@@ -21,16 +45,22 @@ class SettingsFileGenerator
     hash
   end
 
+  # TODO
   def kits
-    # addons = ...
-    site.kits.reduce({}) do |hash, kit|
-      # addons.each
-      # package = kit.design + addons
-      hash[kit.identifier] = {}
-      hash[kit.identifier][:skin] = { module: kit.design.skin_mod }
-      hash[kit.identifier][:plugins] = _kits_plugins(kit, nil, with_module)
-      hash
-    end
+    # # addons = ...
+    # site.kits.reduce({}) do |hash, kit|
+    #   # addons.each
+    #   # package = kit.design + addons
+    #   hash[kit.identifier] = {}
+    #   hash[kit.identifier][:skin] = { module: kit.design.skin_mod }
+    #   hash[kit.identifier][:plugins] = _kits_plugins(kit, nil, with_module)
+    #   hash
+    # end
+  end
+
+  # TODO
+  def app_settings
+    {}
   end
 
   def default_kit

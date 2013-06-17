@@ -12,7 +12,6 @@ describe PlayerFilesGeneratorWorker do
   context 'event is :settings' do
     it 'delays SettingsFileGeneratorWorker only' do
       AppFileGeneratorWorker.should_not_receive(:perform_async)
-      LoaderFileGeneratorWorker.should_not_receive(:perform_async)
       SettingsFileGeneratorWorker.should_receive(:perform_async).with('abcd1234')
 
       described_class.new.perform('abcd1234', :settings)
@@ -26,7 +25,6 @@ describe PlayerFilesGeneratorWorker do
   context 'event is :addons' do
     it 'delays SettingsFileGeneratorWorker only' do
       AppFileGeneratorWorker.should_receive(:perform_async).with('abcd1234')
-      LoaderFileGeneratorWorker.should_receive(:perform_async).with('abcd1234')
       SettingsFileGeneratorWorker.should_not_receive(:perform_async)
 
       described_class.new.perform('abcd1234', :addons)

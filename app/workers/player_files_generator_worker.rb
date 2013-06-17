@@ -19,9 +19,9 @@ class PlayerFilesGeneratorWorker
       SettingsFileGeneratorWorker.perform_async(site_token)
     when :addons
       AppFileGeneratorWorker.perform_async(site_token)
-      LoaderFileGeneratorWorker.perform_async(site_token)
     when :destroy
-      # destroy all files
+      LoaderFileGeneratorWorker.perform_async(site_token, delete: true)
+      SettingsFileGeneratorWorker.perform_async(site_token, delete: true)
     end
   end
 end

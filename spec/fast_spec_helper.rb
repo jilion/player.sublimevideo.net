@@ -21,7 +21,6 @@ unless defined?(Rails)
     def self.root; Pathname.new(File.expand_path('')); end
     def self.env; FakeEnv.new('test'); end
   end
-  puts "Let's define Rails... => #{Rails.root}"
 end
 
 RSpec.configure do |config|

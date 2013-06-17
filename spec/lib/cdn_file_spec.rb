@@ -7,8 +7,8 @@ require 's3_wrapper'
 require 'cdn_file'
 
 describe CDNFile, :fog_mock do
-  let(:file) { fixture_file('app.js', 'r') }
-  let(:file2) { fixture_file('settings.js', 'r') }
+  let(:file) { fixture_file(File.join('packages', 'classic-player-controls-1.0.0', 'main.js'), 'r') }
+  let(:file2) { fixture_file(File.join('packages', 'classic-player-controls-1.0.0', 'addons_settings', 'controls.rb'), 'r') }
   let(:path) { "js/token.js" }
   let(:headers) { {
     'Cache-Control' => 'max-age=60, public', # 2 minutes
@@ -26,7 +26,7 @@ describe CDNFile, :fog_mock do
 
     describe "s3 object(s)" do
       before { cdn_file.upload }
-      let(:bucket) { cdn_file.bucket }
+      let(:bucket) { cdn_file.send(:_bucket) }
 
       it "is public" do
         object_acl = S3Wrapper.fog_connection.get_object_acl(bucket, path).body

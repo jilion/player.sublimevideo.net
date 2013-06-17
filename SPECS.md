@@ -91,7 +91,7 @@ dependencies (declared in a `package.json` file) on other packages.
 
 ```
 - classic-player-controls
-   +- addon_settings
+   +- addons_settings
    |  +- controls.rb
    `- package.json
    `- main.js
@@ -108,7 +108,7 @@ classic-player-controls: {
 
 ```
 - sony-player
-   +- addon_settings
+   +- addons_settings
    |  +- controls.rb
    |  +- subtitles.rb
    `- package.json
@@ -169,12 +169,12 @@ All 3 packages are included in the packages array used to generate the App MD5.
 
 A map will link a design + addon to a package, i.e.:
 
-| Design           | Addon           | Package                  |
-| --------------   | --------------- | ------------------------ |
-| classic          | controls        | classic-player-controls  |
-| flat             | controls        | floating-player-controls |
-| sony             | controls        | sony-player              |
-| sony             | lightbox        | sony-player              |
+| Design          | Addon           | Package                  |
+| --------------  | --------------- | ------------------------ |
+| classic         | controls        | classic-player-controls  |
+| flat            | controls        | floating-player-controls |
+| sony            | controls        | sony-player              |
+| sony            | lightbox        | sony-player              |
 
 Typically, custom players will have only one package.
 

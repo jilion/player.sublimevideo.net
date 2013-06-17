@@ -13,10 +13,8 @@ describe SettingsFileGeneratorWorker do
     described_class.get_sidekiq_options['queue'].should eq 'player'
   end
 
-  it 'calls AppFileGenerator' do
-    Site.should_receive(:find).with('abcd1234') { site }
-    SettingsFileGenerator.should_receive(:new).with(site) { generator }
-    generator.should_receive(:generate_and_upload)
+  it 'calls SettingsFileGenerator' do
+    SettingsFileGenerator.should_receive(:update).with('abcd1234', {})
 
     described_class.new.perform('abcd1234')
   end

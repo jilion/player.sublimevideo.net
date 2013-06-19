@@ -7,8 +7,8 @@ class Site
 
   belongs_to :default_kit, class_name: 'Kit'
 
-  def addons
-    @addons ||= Addon.all(site_token: token)
+  def addon_plans
+    @addon_plans ||= AddonPlan.all(site_token: token)
   end
 
   def kits
@@ -16,7 +16,10 @@ class Site
   end
 
   def packages(stage = 'stable')
-    Package.packages_from_addons(addons, stage)
+    design_names = kits.map { |kit| kit.design['name'] }.uniq
+    addon_names = addon_plans.map { |addon_plan| addon_plan.addon['name'] }
+
+    design_names.map { |design_name| Package.packages_from_addons(design_name, addon_names, stage) }.flatten.uniq
   end
 
 end

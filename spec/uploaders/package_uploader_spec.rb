@@ -15,7 +15,7 @@ describe PackageUploader, :fog_mock do
   let(:zip) do
     Zip::ZipFile.open(Rails.root.join('spec/fixtures', 'packages', package_name, zip_name), Zip::ZipFile::CREATE) do |zipfile|
       zipfile.add('package.json', fixture_file(File.join('packages', package_name, 'package.json')))
-      zipfile.add('settings.js', fixture_file(File.join('packages', package_name, 'settings.js')))
+      zipfile.add('controls.js', fixture_file(File.join('packages', package_name, 'addons_settings', 'controls.json')))
       zipfile.add('main.js', fixture_file(File.join('packages', package_name, 'main.js')))
     end
     fixture_file(File.join('packages', package_name, zip_name))

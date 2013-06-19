@@ -16,6 +16,7 @@ gem 'fog'
 gem 'carrierwave'
 
 gem 'rubyzip', require: 'zip/zip'
+gem 'mime-types'
 
 gem 'solve'
 
@@ -44,6 +45,7 @@ end
 group :development do
   gem 'guard-rspec'
   gem 'ruby_gntp'
+  gem 'annotate'
 end
 
 group :test do

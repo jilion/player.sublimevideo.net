@@ -8,7 +8,7 @@ require 'cdn_file'
 
 describe CDNFile, :fog_mock do
   let(:file) { fixture_file(File.join('packages', 'classic-player-controls-1.0.0', 'main.js'), 'r') }
-  let(:file2) { fixture_file(File.join('packages', 'classic-player-controls-1.0.0', 'addons_settings', 'controls.rb'), 'r') }
+  let(:file2) { fixture_file(File.join('packages', 'classic-player-controls-1.0.0', 'addons_settings', 'controls.json'), 'r') }
   let(:path) { "js/token.js" }
   let(:headers) { {
     'Cache-Control' => 'max-age=60, public', # 2 minutes

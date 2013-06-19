@@ -20,6 +20,8 @@ gem 'mime-types'
 
 gem 'solve'
 
+gem 'librato-rails', github: 'librato/librato-rails', branch: 'feature/rack_first'
+
 # Gems used only for assets and not required
 # in production environments by default.
 # group :assets do

@@ -3,12 +3,13 @@ require 'spec_helper'
 describe Package do
 
   context 'Factory' do
-    subject { create(:package).reload }
+    subject { create(:package) }
 
     its(:name)          { should be_present }
-    its(:version)       { should eq '1.0.0' }
-    its(:dependencies)  { should eq({}) }
-    its(:settings)  { should eq({}) }
+    its(:version)       { should be_present }
+    its(:zip)           { should be_present }
+    its(:dependencies)  { should be_present }
+    its(:settings)      { should be_present }
     it { should be_valid }
   end
 
@@ -16,10 +17,61 @@ describe Package do
     it { should have_and_belong_to_many(:app_bundles) }
   end
 
-  describe "Validations" do
+  describe 'Validations' do
     it { should validate_presence_of(:name) }
     it { should validate_presence_of(:version) }
+    it { should validate_presence_of(:zip) }
     it { should validate_uniqueness_of(:version).scoped_to(:name) }
+  end
+
+  describe 'before_create' do
+    let(:package) { create(:sony_player_1_0_0) }
+
+    it 'sets the dependencies from the package.json' do
+      package.dependencies.should eq({
+        'classic-player-controls' => '1.0.0'
+      })
+    end
+
+    it 'sets the settings from the package.json' do
+      package.settings.should eq({
+        'controls' => {
+          'standard' => {
+            'enable' => {
+              'type' => 'boolean',
+              'values' => [true, false],
+              'default' => true
+            }
+          }
+        },
+        'subtitles' => {
+          'standard' => {
+            'enable' => {
+              'type' => 'boolean',
+              'values' => [true],
+              'default' => true
+            },
+            'language' => {
+              'type' => 'string',
+              'values' => ['en'],
+              'default' => 'en'
+            }
+          },
+          'premium' => {
+            'enable' => {
+              'type' => 'boolean',
+              'values' => [true],
+              'default' => true
+            },
+            'language' => {
+              'type' => 'string',
+              'values' => ['en', 'fr'],
+              'default' => 'en'
+            }
+          }
+        }
+      })
+    end
   end
 
   describe '.packages_from_addons' do
@@ -59,19 +111,32 @@ describe Package do
     end
   end
 
-  describe '#dependencies' do
-    let(:package) { create(:package, dependencies: { a: 'b' }) }
+  describe '#main_file' do
+    let(:package) { create(:sony_player_1_0_0) }
 
-    it 'is a json hash' do
-      package.dependencies.should eq({ 'a' => 'b' })
+    it 'returns the main JS file' do
+      package.main_file do |main_file|
+        main_file.read.gsub(/\s+\Z/, '').should eq <<-EOF.gsub(/^\s+/, '').gsub(/\s+\Z/, '')
+        // sony-player 1.0.0
+      EOF
+      end
     end
   end
 
-  describe '#settings' do
-    let(:package) { create(:package, settings: { a: 'b' }) }
+  describe '#assets' do
+    let(:package) { create(:sony_player_1_0_0) }
 
-    it 'is a json hash' do
-      package.settings.should eq({ 'a' => 'b' })
+    it 'returns an array of assets' do
+      package.assets { |assets| assets.should have(1).item }
+    end
+
+    it 'returns a hash with 2 keys: "name" & "file"' do
+      package.assets do |assets|
+        assets.each do |asset|
+          asset[:name].should eq 'brand.png'
+          asset[:file].should be_a Tempfile
+        end
+      end
     end
   end
 
@@ -88,6 +153,7 @@ end
 #  settings     :json
 #  updated_at   :datetime
 #  version      :string(255)
+#  zip          :string(255)
 #
 # Indexes
 #

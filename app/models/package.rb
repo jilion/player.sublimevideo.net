@@ -1,3 +1,5 @@
+require 'zip/zip'
+
 class Package < ActiveRecord::Base
 
   has_and_belongs_to_many :app_bundles
@@ -7,13 +9,11 @@ class Package < ActiveRecord::Base
 
   mount_uploader :zip, PackageUploader
 
-  validates :name, :version, presence: true
+  validates :name, :version, :zip, presence: true
   validates :version, uniqueness: { scope: :name }
 
-  before_save ->(package) do
-    package.dependencies ||= {}
-    package.settings ||= {}
-  end
+  before_create :_set_dependencies
+  before_create :_set_settings
 
   after_touch :_clear_caches
   after_save :_clear_caches
@@ -30,18 +30,60 @@ class Package < ActiveRecord::Base
   #   stable
   #
   def self.packages_from_addons(design_name, addon_names, stage = 'stable')
-    addon_names.reduce([]) do |memo, addon_name|
+    Array(addon_names).reduce([]) do |memo, addon_name|
       memo += _packages_for_addon(design_name, addon_name, stage)
     end
   end
 
+  def self.packages_for_name_and_stage(name, stage)
+    _cached_packages(name).select { |p| Stage.stages_equal_or_more_stable_than(stage).include?(p.stage) }
+  end
+
   # FIXME, is this method needed?
   def self.app_packages(stage = 'stable')
-    packages_for_design_and_name_and_stage(nil, 'app', stage)
+    packages_from_addons(nil, 'app', stage)
   end
 
   def stage
     Stage.version_stage(version)
+  end
+
+  def main_file
+    return unless zip?
+
+    tmpfile = Tempfile.new(["main-#{name}-#{version}", '.js'])
+
+    _zip_file do |z|
+      tmpfile.write(z.read("#{File.basename(zip.path, '.zip')}/main.js"))
+    end
+    tmpfile.rewind
+
+    yield tmpfile
+  ensure
+    tmpfile.close
+    tmpfile.unlink
+  end
+
+  def assets
+    return unless zip?
+
+    assets = []
+    Zip::ZipFile.foreach(zip.path) do |z|
+      next unless z.name =~ %r{assets/(\w+)\.\w{2,3}}
+
+      tmpfile = Tempfile.new(["asset-#{name}-#{version}-#{File.basename(z.name)}", File.extname(z.name)])
+      z.get_input_stream { |io| tmpfile.print(io.read) }
+      tmpfile.rewind
+
+      assets << { name: File.basename(z.name), file: tmpfile }
+    end
+
+    yield assets
+  ensure
+    assets.each do |asset|
+      asset[:file].close
+      asset[:file].unlink
+    end
   end
 
   # @private
@@ -50,16 +92,47 @@ class Package < ActiveRecord::Base
   end
 
   # @private
-  def self._packages_for_name_and_stage(name, stage)
-    _cached_packages(name).select { |p| Stage.stages_equal_or_more_stable_than(stage).include?(p.stage) }
-  end
-
-  # @private
   def self._packages_for_addon(design_name, addon_name, stage)
-    _packages_for_name_and_stage(DesignAddonToPackage.package(design_name, addon_name), stage)
+    packages_for_name_and_stage(DesignAddonToPackage.package(design_name, addon_name), stage)
   end
 
-  # @private
+  private
+
+  def _zip_file
+    return unless zip?
+
+    Zip::ZipFile.open(zip.path) { |z| yield z }
+  end
+
+  def _dependencies_from_zip
+    return {} unless zip?
+
+    @_dependencies_from_zip ||= JSON[_zip_file { |z| z.read("#{File.basename(zip.path, '.zip')}/package.json") }]['dependencies']
+  end
+
+  def _settings_from_zip
+    return {} unless zip?
+
+    @_settings_from_zip ||= begin
+      settings = {}
+      Zip::ZipFile.foreach(zip.path) do |z|
+        next unless z.name =~ %r{addons_settings/(\w+)\.json}
+
+        settings.merge!($1 => JSON[z.get_input_stream { |io| io.read }])
+      end
+
+      settings
+    end
+  end
+
+  def _set_dependencies
+    self.dependencies = _dependencies_from_zip
+  end
+
+  def _set_settings
+    self.settings = _settings_from_zip
+  end
+
   def _clear_caches
     Rails.cache.clear ['packages', name]
   end
@@ -77,6 +150,7 @@ end
 #  settings     :json
 #  updated_at   :datetime
 #  version      :string(255)
+#  zip          :string(255)
 #
 # Indexes
 #

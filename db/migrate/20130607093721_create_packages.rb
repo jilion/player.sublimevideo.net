@@ -4,6 +4,7 @@ class CreatePackages < ActiveRecord::Migration
       t.string :name
       t.string :version
       t.json :dependencies
+      t.json :settings
 
       t.timestamps
     end

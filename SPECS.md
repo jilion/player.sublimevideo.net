@@ -31,7 +31,7 @@
 
 ### Workers
 
-* `PlayerGeneratorWorker` (noop, delegated to `plsv`)
+* `PlayerFilesGeneratorWorker` (no-op, delegated to `plsv`)
 
 ### Private APIs [implemented]
 
@@ -143,20 +143,20 @@ A JS file that contains the settings
 A template JS file containing some code that is common to all generated files.
 For instance, there is a loader template and an app template.
 
-The app template, loader template and settings templates are "special" packages
+[FIXME] The app template, loader template and settings templates are "special" packages
 that depends on some packages or none.
 
-* The app template must be put at the top of the app file;
+* [FIXME] The app template must be put at the top of the app file;
 * The loader template must be interpolated with Ruby variables and put in the
   final loader file.
 * The settings template must be interpolated with Ruby variables and put in the
   final settings file.
 
-All 3 packages are included in the packages array used to generate the App bundle token (a MD5).
+[FIXME] All 3 packages are included in the packages array used to generate the App bundle token (a MD5).
 
 ### Workers
 
-* `PlayerGeneratorWorker`
+* `PlayerFilesGeneratorWorker`
 * `AppFileGeneratorWorker`
 * `LoaderFileGeneratorWorker`
 * `SettingsFileGeneratorWorker`
@@ -185,7 +185,7 @@ Typically, custom players will have only one package.
 #### New package upload
 
 * The app will expose an API / UI for the player team to upload new packages.
-* Each time a new package version is uploaded, the `PlayerGeneratorWorker`
+* Each time a new package version is uploaded, the `PlayerFilesGeneratorWorker`
   worker will be invoked.
 * The zip file is uploaded to S3. Dependencies & settings are stored in the DB.
 
@@ -194,7 +194,7 @@ TBD: We should maybe namespace the assets under their package name. e.g.:
 * `/a/<bundle_token>/classic-player-controls/play.png`
 * `/a/<bundle_token>/floating-player-controls/play.png`
 
-#### PlayerGeneratorWorker
+#### PlayerFilesGeneratorWorker
 
 This worker delegates to several workers depending on the event passed to it:
 

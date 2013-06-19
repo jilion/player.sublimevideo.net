@@ -2,7 +2,7 @@ class DesignAddonToPackage
 
   MAP = {
     classic: {
-      controls: 'player-controls',
+      controls: 'classic-player-controls',
       lightbox: 'lightbox',
       logo: 'logo'
     },
@@ -15,6 +15,11 @@ class DesignAddonToPackage
       controls: 'player-controls',
       lightbox: 'lightbox',
       logo: 'logo'
+    },
+    sony: {
+      controls: 'sony-player',
+      lightbox: 'sony-player',
+      logo: 'sony-player'
     }
   }
 

@@ -1,9 +1,21 @@
 require 'spec_helper'
 
 describe Loader do
+  context 'Factory' do
+    subject { create(:loader) }
+
+    its(:site_token) { should be_present }
+    its(:app_bundle) { should be_present }
+    it { should be_valid }
+  end
 
   describe 'Associations' do
     it { should belong_to(:app_bundle) }
+  end
+
+  describe 'Validations' do
+    it { should validate_presence_of(:site_token) }
+    it { should validate_uniqueness_of(:site_token) }
   end
 
 end

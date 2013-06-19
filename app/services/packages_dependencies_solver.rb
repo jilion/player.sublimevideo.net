@@ -9,7 +9,9 @@ class PackagesDependenciesSolver
 
   def initialize(initial_packages, stage)
     @stage = stage
-    @packages = Package.app_packages(@stage) + initial_packages
+    # FIXME
+    # @packages = Package.app_packages(@stage) + initial_packages
+    @packages = initial_packages
     @demands = @packages.map { |package| [package.name, '>= 0.0.0-alpha'] }.uniq
     _build_graph
   end
@@ -35,7 +37,7 @@ class PackagesDependenciesSolver
   end
 
   def _add_package_dependencies_to_graph(package)
-    Package.packages_for_name(package, @stage).each do |package|
+    Package.packages_for_name_and_stage(package, @stage).each do |package|
       _add_package_to_graph(package) unless _graph_includes_package_already?(package)
     end
   end

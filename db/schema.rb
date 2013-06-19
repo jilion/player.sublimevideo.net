@@ -44,6 +44,7 @@ ActiveRecord::Schema.define(version: 20130607094000) do
   create_table "packages", force: true do |t|
     t.string   "name"
     t.string   "version"
+    t.string   "zip"
     t.json     "dependencies"
     t.json     "settings"
     t.datetime "created_at"

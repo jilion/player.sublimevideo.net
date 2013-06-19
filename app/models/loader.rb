@@ -2,6 +2,8 @@ class Loader < ActiveRecord::Base
 
   belongs_to :app_bundle
 
+  validates :site_token, presence: true, uniqueness: true
+
 end
 
 # == Schema Information

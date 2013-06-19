@@ -35,11 +35,12 @@ class AppFileGenerator
   end
 
   def generate_and_get_bundle_token
-    if _app_bundle.save
-      _create_loader!
+    unless _app_bundle
+      AppBundle.create!(token: bundle_token, packages: _original_packages)
       cdn_file.upload
       _increment_librato('update')
     end
+    _create_loader
 
     bundle_token
   end
@@ -47,7 +48,7 @@ class AppFileGenerator
   private
 
   def _app_bundle
-    @_app_bundle ||= AppBundle.new(token: bundle_token, packages: _original_packages)
+    @_app_bundle ||= AppBundle.find_by_token(bundle_token)
   end
 
   def _generate_file
@@ -59,13 +60,14 @@ class AppFileGenerator
     file
   end
 
-  # FIXME: Read the main.js file, not the zip!
   def _binded_content
-    @_binded_content ||= _resolved_packages.reduce('') { |memo, package| memo += package.file.read }
+    @_binded_content ||= _resolved_packages.reduce('') do |memo, package|
+      memo += package.main_file { |f| f.read }
+    end
   end
 
   def _path
-    "s3/#{bundle_token}.js"
+    "app/#{bundle_token}.js"
   end
 
   def _s3_headers
@@ -87,8 +89,8 @@ class AppFileGenerator
     end
   end
 
-  def _create_loader!
-    Loader.create!(app_bundle: app_bundle, site_token: site.token)
+  def _create_loader
+    Loader.create(app_bundle: _app_bundle, site_token: site.token)
   end
 
   def _increment_librato(action)

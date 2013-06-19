@@ -26,24 +26,23 @@ describe CDNFile, :fog_mock do
 
     describe "s3 object(s)" do
       before { cdn_file.upload }
-      let(:bucket) { cdn_file.send(:_bucket) }
 
       it "is public" do
-        object_acl = S3Wrapper.fog_connection.get_object_acl(bucket, path).body
+        object_acl = S3Wrapper.send(:_fog_connection).get_object_acl(ENV['S3_PACKAGES_BUCKET'], path).body
         object_acl['AccessControlList'].should include(
           {"Permission"=>"READ", "Grantee"=>{"URI"=>"http://acs.amazonaws.com/groups/global/AllUsers"}}
         )
       end
       it "have good content_type public" do
-        object_headers = S3Wrapper.fog_connection.head_object(bucket, path).headers
+        object_headers = S3Wrapper.head(path).headers
         object_headers['Content-Type'].should eq 'text/javascript'
       end
       it "have 5 min max-age cache control" do
-        object_headers = S3Wrapper.fog_connection.head_object(bucket, path).headers
+        object_headers = S3Wrapper.head(path).headers
         object_headers['Cache-Control'].should eq 'max-age=60, public'
       end
       it "have ETag" do
-        object_headers = S3Wrapper.fog_connection.head_object(bucket, path).headers
+        object_headers = S3Wrapper.head(path).headers
         object_headers['ETag'].should be_present
       end
     end

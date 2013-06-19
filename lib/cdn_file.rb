@@ -9,12 +9,12 @@ class CDNFile
 
   def upload
     File.open(file) do |f|
-      S3Wrapper.fog_connection.put_object(_bucket, path, f.read, headers)
+      S3Wrapper.put(path, f.read, headers)
     end
   end
 
   def delete
-    S3Wrapper.fog_connection.delete_object(_bucket, path)
+    S3Wrapper.delete(path)
   end
 
   def present?
@@ -23,12 +23,8 @@ class CDNFile
 
   private
 
-  def _bucket
-    @_bucket ||= ENV['S3_PACKAGES_BUCKET']
-  end
-
   def _s3_headers
-    S3Wrapper.fog_connection.head_object(_bucket, path).headers
+    S3Wrapper.head(path).headers
   rescue Excon::Errors::NotFound
     {}
   end

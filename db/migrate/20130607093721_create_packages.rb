@@ -3,6 +3,7 @@ class CreatePackages < ActiveRecord::Migration
     create_table :packages do |t|
       t.string :name
       t.string :version
+      t.string :zip
       t.json :dependencies
       t.json :settings
 

@@ -1,15 +1,14 @@
 {
-  "name": "logo",
-  "version": "2.0.0-beta.2",
+  "name": "floating-player-controls",
+  "version": "1.0.0",
   "main": "path/to/main.js",
   "ignore": [
     ".jshintrc",
     "**/*.txt"
   ],
   "dependencies": {
-    "<name>": "<version>",
-    "<name>": "<folder>",
-    "<name>": "<package>"
+    "app": "2.0.0",
+    "player-controls": "1.0.0"
   },
   "devDependencies": {
     "<test-framework-name>": "<version>"

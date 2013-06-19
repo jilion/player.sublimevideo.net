@@ -6,6 +6,7 @@ require 'app_file_generator'
 Site = Class.new unless defined? Site
 Package = Class.new unless defined? Package
 AppBundle = Class.new unless defined? AppBundle
+Loader = Class.new unless defined? Loader
 
 describe AppFileGenerator do
   let(:site) do
@@ -20,12 +21,17 @@ describe AppFileGenerator do
     double('Kit', design: { 'name' => 'Classic' }, id: 1, identifier: 'foo',
                   name: 'Foo player', settings: {})
   end
-  let(:controls) { double('classic player controls', file: fixture_file(File.join('packages', 'classic-player-controls-1.0.0', 'main.js'))) }
-  let(:sony_player) { double('sony player', file: fixture_file(File.join('packages', 'sony-player-2.0.0-beta.2', 'main.js'))) }
+  let(:controls) { double('classic player controls') }
+  let(:sony_player) { double('sony player') }
   let(:service) { described_class.new(site, 'stable') }
   let(:fake_service) { double('service') }
   let(:cdn_file) { double('cdn file') }
   let(:bundle_token) { 'foobar' }
+
+  before do
+    controls.stub(:main_file).and_yield(fixture_file(File.join('packages', 'classic-player-controls-1.0.0', 'main.js')))
+    sony_player.stub(:main_file).and_yield(fixture_file(File.join('packages', 'sony-player-2.0.0-beta.2', 'main.js')))
+  end
 
   describe '.update' do
     it 'calls .update_for_stage for each stage' do
@@ -129,7 +135,7 @@ describe AppFileGenerator do
     end
 
     it 'uses the bundle_token as path' do
-      service.cdn_file.path.should eq 's3/abcd1234.js'
+      service.cdn_file.path.should eq 'app/abcd1234.js'
     end
 
     it 'sets the right headers' do
@@ -141,20 +147,32 @@ describe AppFileGenerator do
     end
   end
 
+  describe '#_path' do
+    before do
+      service.should_receive(:bundle_token) { 'abcd1234' }
+    end
+
+    it 'sets the right path' do
+      service.send(:_path).should eq 'app/abcd1234.js'
+    end
+  end
+
   describe '#generate_and_get_bundle_token' do
     let(:original_packages) { double('AppBundle') }
     let(:app_bundle) { double('AppBundle') }
     before do
-      service.should_receive(:bundle_token).at_least(:twice).and_return(bundle_token)
-      service.should_receive(:_original_packages) { original_packages }
-      AppBundle.should_receive(:new).with(token: bundle_token, packages: original_packages).and_return(app_bundle)
+      service.stub(:bundle_token).and_return(bundle_token)
+      service.stub(:_original_packages) { original_packages }
+      Loader.stub(:create)
     end
 
-    context 'with non-existing MD5' do
-      before { app_bundle.should_receive(:save).and_return(true) }
+    context 'with non-existing app bundle' do
+      before do
+        service.should_receive(:_app_bundle).at_least(:twice).and_return(nil)
+      end
 
       it 'upload the cdn file' do
-        service.should_receive(:_create_loader!)
+        AppBundle.should_receive(:create!).with(token: bundle_token, packages: original_packages).and_return(true)
         service.should_receive(:cdn_file) { cdn_file }
         cdn_file.should_receive(:upload)
 
@@ -162,8 +180,11 @@ describe AppFileGenerator do
       end
     end
 
-    context 'with an existing MD5' do
-      before { app_bundle.should_receive(:save).and_return(false) }
+    context 'with an existing app bundle' do
+      before do
+        service.should_receive(:_app_bundle).at_least(:twice).and_return(app_bundle)
+        AppBundle.should_not_receive(:create!)
+      end
 
       it 'does not upload anything and return the bundle_token' do
         service.should_not_receive(:_create_loader!)

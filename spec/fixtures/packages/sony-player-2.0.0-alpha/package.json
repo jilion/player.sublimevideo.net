@@ -1,5 +1,5 @@
 {
-  "name": "logo",
+  "name": "sony-player",
   "version": "2.0.0-alpha",
   "main": "path/to/main.js",
   "ignore": [
@@ -7,9 +7,7 @@
     "**/*.txt"
   ],
   "dependencies": {
-    "<name>": "<version>",
-    "<name>": "<folder>",
-    "<name>": "<package>"
+    "classic-player-controls": "2.0.0"
   },
   "devDependencies": {
     "<test-framework-name>": "<version>"

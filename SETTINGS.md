@@ -1,9 +1,40 @@
-## settings.rb in a package
+## `classic-player-controls/addons_settings/controls.rb`
+
 ```ruby
 require 'package_settings'
 
 settings = PackageSettings.new
 
+settings.level(0) do |level|
+  level[:name] = 'standard'
+  level[:template] = {
+    enable: {
+      type: 'boolean',
+      values: [true, false],
+      default: true
+    },
+    visibility: {
+      type: 'string',
+      values: ['autohide', 'visible'],
+      default: 'autohide'
+    }
+  }
+end
+```
+
+## `chromeless-player-controls/addons_settings/controls.rb`
+
+```ruby
+require 'package_settings'
+
+settings = PackageSettings.new('classic-player-controls', 'controls')
+
+settings.get_level(0).delete_key(:visibility)
+
+settings
+```
+
+```ruby
 settings[0][:name] = 'sublime'
 settings[0][:template] = {
   enable: {

@@ -60,17 +60,17 @@
 | dependencies    | Text (Array)   |
 | settings        | Text (Hash)    |
 
-#### `AppMd5`
+#### `AppBundle`
 
 | Field            | Type           |
 | --------------   | -------------- |
-| md5              | String         |
+| token            | String         |
 
-#### `AppMd5sPackages`
+#### `AppBundlesPackages`
 
 | Field            | Type           |
 | ---------------- | -------------- |
-| app_md5_id       | Integer        |
+| app_bundle_id    | Integer        |
 | package_id       | Integer        |
 
 #### `Loader`
@@ -78,7 +78,7 @@
 | Field            | Type           |
 | --------------   | -------------- |
 | site_token       | String         |
-| app_md5_id       | Integer        |
+| app_bundle_id    | Integer        |
 
 ### Definitions
 
@@ -93,6 +93,8 @@ dependencies (declared in a `package.json` file) on other packages.
 - classic-player-controls
    +- addons_settings
    |  +- controls.rb
+   +- assets
+   |  +- play.png
    `- package.json
    `- main.js
 ```
@@ -130,7 +132,7 @@ A JS file that is the concatenation of all the packages needed by a site.
 
 #### Loader
 
-A JS file that contains the URL to the App JS file. The URL contains app-<md5>.js.
+A JS file that contains the URL to the App JS file. The URL contains app-<bundle_token>.js.
 
 #### Settings
 
@@ -150,7 +152,7 @@ that depends on some packages or none.
 * The settings template must be interpolated with Ruby variables and put in the
   final settings file.
 
-All 3 packages are included in the packages array used to generate the App MD5.
+All 3 packages are included in the packages array used to generate the App bundle token (a MD5).
 
 ### Workers
 
@@ -182,50 +184,59 @@ Typically, custom players will have only one package.
 
 #### New package upload
 
-The app will expose an API / UI for the player team to upload new packages.
-Each time a new package version is uploaded, the `PlayerGeneratorWorker` worker
-will be invoked.
+* The app will expose an API / UI for the player team to upload new packages.
+* Each time a new package version is uploaded, the `PlayerGeneratorWorker`
+  worker will be invoked.
+* The zip file is uploaded to S3. Dependencies & settings are stored in the DB.
+
+TBD: We should maybe namespace the assets under their package name. e.g.:
+
+* `/a/<bundle_token>/classic-player-controls/play.png`
+* `/a/<bundle_token>/floating-player-controls/play.png`
 
 #### PlayerGeneratorWorker
 
-This worker delegates to several workers:
+This worker delegates to several workers depending on the event passed to it:
 
-1. `AppFileGeneratorWorker` & `SettingsFileGenerator` file (can be done in
-  parallel)
-2. `LoaderFileGenerator` (can only be done once the app file is generated /
-  checked)
+* `SettingsFileGenerator` when event is `:settings`
+* `AppFileGeneratorWorker` when event is `:addons`
+* `LoaderFileGeneratorWorker` & `SettingsFileGenerator` when event is `:destroy`
+
+#### AppBundle
+
+When an new `AppBundle` is created, it uploads all the assets files of the
+associated packages to `/a/<bundle_token>/`.
 
 #### AppFileGenerator
 
-1. `plsv` calls `mysv` to get the list of the site' subscribed add-ons & kits.
-2. From this list of add-ons and designs (from kits), it gets the list of
-  packages (from the mapping table `add-on -> packages names`). The rule is to
-  look for packages `<design>.<addon>` and if it cannot be found, returns the
-  `<addon>` package instead.
-3. From the list of packages names, it resolve the dependency tree and ends up
-  with a list of packages.
-4. It then generates a `md5` for this list of packages (sorted).
-5. It check if an `AppMd5` exists fot this `md5`.
-    * If yes, simply use the existing file and the `md5`.
-    * If no, concatenate all the package versions content and insert them
-      in a blank file with the "header" package first! Then upload the file
-      to `/js/app-<md5>.js` and return the `md5`.
+1. From the list of site's add-ons and designs (from kits), it gets the list of
+  packages (from the mapping table `design + add-on -> package name`).
+2. From the list of packages names, it generatess a `bundle_token` (a MD5) for
+  this array of packages (sorted).
+3. It check if an `AppBundle` exists fot this `bundle_token`.
+    * If yes, returns the `bundle_token`, the app bundle already exists!
+    * If no, concatenate all the packages `main.js` files and insert them in a
+      template! It creates a new `AppBundle` record for the `bundle_token`. The
+      file is then uploaded to `/js/app-<bundle_token>.js` and return the `bundle_token`.
 
 #### LoaderFileGenerator
 
-1. Insert the `md5` from the app generation step into the loader template.
+1. Insert the `bundle_token` from the app generation step into the loader
+  template and upload it.
 
-#### Settings generation
+#### SettingsFileGenerator
 
-1. `plsv` calls `mysv` to get the list of the site's kits.
-2. It inserts the list of kit design + settings (`{ '1': { design: 'flat',
-  settings: { ... } } }`) in the settings template. It also insert the default
-  settings for the add-on plan if these settings are specific for this design.
-3. It then upload the file to `/s2/<token>.js`.
+1. It find the site's current `Loader`.
+2. From the loader record, it gets its list of packages.
+3. From the list of site's add-ons and designs (from kits), it gets the list of
+  packages (from the mapping table `design + add-on -> package name`).
+    1. For each package, it gets the bundled version from the packages list from 2.
+    2. It then merges the package settings with the kit's settings.
+4. It populates the template with the full settings hash (e.g. `{ '1': { design: 'flat',
+  settings: { ... } } }`).
+5. It then uploads the file to `/s3/<token>.js`.
 
 ### Notes
 
-* The new settings will list only once the default values for each add-on
-  (instead) of listing them per kit.
-* The path for the new settings file will be `/s2` to ensure a smooth transition
+* The path for the new settings file will be `/s3` to ensure a smooth transition
   from the old to the new settings.

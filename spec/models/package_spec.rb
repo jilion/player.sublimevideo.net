@@ -12,7 +12,7 @@ describe Package do
   end
 
   describe 'Associations' do
-    it { should have_and_belong_to_many(:app_md5s) }
+    it { should have_and_belong_to_many(:app_bundles) }
   end
 
   describe "Validations" do

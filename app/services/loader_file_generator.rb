@@ -42,15 +42,11 @@ class LoaderFileGenerator
     @cdn_file ||= CDNFile.new(_generate_file, _path, _s3_headers)
   end
 
-  def app_md5
-    @app_md5 ||= (options[:app_md5] || Digest::MD5.digest(_dependencies.sort.to_s))
+  def bundle_token
+    @bundle_token ||= options[:bundle_token]
   end
 
   private
-
-  def _dependencies
-    @_dependencies ||= PackagesDependenciesSolver.dependencies(site.packages(stage), stage)
-  end
 
   def _generate_file
     template_path = Rails.root.join('app', 'templates', "loader-#{stage}.js.erb")

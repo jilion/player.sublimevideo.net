@@ -16,35 +16,36 @@ ActiveRecord::Schema.define(version: 20130607094000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "app_md5s", force: true do |t|
-    t.string   "md5"
+  create_table "app_bundles", force: true do |t|
+    t.string   "token"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "app_md5s", ["md5"], name: "index_app_md5s_on_md5", using: :btree
+  add_index "app_bundles", ["token"], name: "index_app_bundles_on_token", using: :btree
 
-  create_table "app_md5s_packages", id: false, force: true do |t|
-    t.integer "app_md5_id"
+  create_table "app_bundles_packages", id: false, force: true do |t|
+    t.integer "app_bundle_id"
     t.integer "package_id"
   end
 
-  add_index "app_md5s_packages", ["app_md5_id"], name: "index_app_md5s_packages_on_app_md5_id", using: :btree
-  add_index "app_md5s_packages", ["package_id"], name: "index_app_md5s_packages_on_package_id", using: :btree
+  add_index "app_bundles_packages", ["app_bundle_id"], name: "index_app_bundles_packages_on_app_bundle_id", using: :btree
+  add_index "app_bundles_packages", ["package_id"], name: "index_app_bundles_packages_on_package_id", using: :btree
 
   create_table "loaders", force: true do |t|
     t.string   "site_token"
-    t.integer  "app_md5_id"
+    t.integer  "app_bundle_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "loaders", ["app_md5_id"], name: "index_loaders_on_app_md5_id", using: :btree
+  add_index "loaders", ["app_bundle_id"], name: "index_loaders_on_app_bundle_id", using: :btree
 
   create_table "packages", force: true do |t|
     t.string   "name"
     t.string   "version"
     t.json     "dependencies"
+    t.json     "settings"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

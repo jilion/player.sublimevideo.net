@@ -5,7 +5,7 @@ require 'app_file_generator'
 
 Site = Class.new unless defined? Site
 Package = Class.new unless defined? Package
-AppMd5 = Class.new unless defined? AppMd5
+AppBundle = Class.new unless defined? AppBundle
 
 describe AppFileGenerator do
   let(:site) do
@@ -25,13 +25,23 @@ describe AppFileGenerator do
   let(:service) { described_class.new(site, 'stable') }
   let(:fake_service) { double('service') }
   let(:cdn_file) { double('cdn file') }
-  let(:md5) { double('md5', md5: 'abcd1234') }
+  let(:bundle_token) { 'foobar' }
+
+  describe '.update' do
+    it 'calls .update_for_stage for each stage' do
+      Stage.stages.each do |stage|
+        described_class.should_receive(:update_for_stage).with('123', stage)
+      end
+
+      described_class.update('123')
+    end
+  end
 
   describe '.update_for_stage' do
     before do
       Site.should_receive(:find).with('123') { site }
       described_class.stub(:new) { fake_service }
-      service.stub(:generate_and_get_md5) { md5 }
+      service.stub(:generate_and_get_bundle_token) { bundle_token }
       LoaderFileGeneratorWorker.stub(:perform_async)
     end
 
@@ -44,15 +54,15 @@ describe AppFileGenerator do
     context 'stage is "stable"' do
       let(:stage) { 'stable' }
 
-      it 'calls #generate_and_get_md5 on the generator' do
-        service.should_receive(:generate_and_get_md5) { md5 }
+      it 'calls #generate_and_get_bundle_token on the generator' do
+        service.should_receive(:generate_and_get_bundle_token) { bundle_token }
 
         described_class.update_for_stage('123', stage)
       end
 
       it 'delays LoaderFileGeneratorWorker.perform_async' do
-        service.should_receive(:generate_and_get_md5) { md5 }
-        LoaderFileGeneratorWorker.should_receive(:perform_async).with('123', stage: stage, app_md5: md5)
+        service.should_receive(:generate_and_get_bundle_token) { bundle_token }
+        LoaderFileGeneratorWorker.should_receive(:perform_async).with('123', stage: stage, bundle_token: bundle_token)
 
         described_class.update_for_stage('123', stage)
       end
@@ -61,14 +71,14 @@ describe AppFileGenerator do
     context 'stage is "beta"' do
       let(:stage) { 'beta' }
 
-      it 'does not call #generate_and_get_md5 on the generator' do
-        service.should_not_receive(:generate_and_get_md5) { md5 }
+      it 'does not call #generate_and_get_bundle_token on the generator' do
+        service.should_not_receive(:generate_and_get_bundle_token) { bundle_token }
 
         described_class.update_for_stage('123', stage)
       end
 
       it 'does not delay LoaderFileGeneratorWorker.perform_async' do
-        service.should_not_receive(:generate_and_get_md5) { md5 }
+        service.should_not_receive(:generate_and_get_bundle_token) { bundle_token }
         LoaderFileGeneratorWorker.should_not_receive(:perform_async)
 
         described_class.update_for_stage('123', stage)
@@ -78,14 +88,14 @@ describe AppFileGenerator do
     context 'stage is "alpha"' do
       let(:stage) { 'alpha' }
 
-      it 'does not call #generate_and_get_md5 on the generator' do
-        service.should_not_receive(:generate_and_get_md5) { md5 }
+      it 'does not call #generate_and_get_bundle_token on the generator' do
+        service.should_not_receive(:generate_and_get_bundle_token) { bundle_token }
 
         described_class.update_for_stage('123', stage)
       end
 
       it 'does not delay LoaderFileGeneratorWorker.perform_async' do
-        service.should_not_receive(:generate_and_get_md5) { md5 }
+        service.should_not_receive(:generate_and_get_bundle_token) { bundle_token }
         LoaderFileGeneratorWorker.should_not_receive(:perform_async)
 
         described_class.update_for_stage('123', stage)
@@ -93,42 +103,21 @@ describe AppFileGenerator do
     end
   end
 
-  describe '#generate_and_get_md5' do
-    let(:arel) { double }
-    before do
-      service.should_receive(:_md5).at_least(:twice).and_return(md5)
-      AppMd5.should_receive(:where) { arel }
-    end
+  describe '#bundle_token' do
+    before { site.stub(:packages).and_return(%w[b a]) }
+    let(:expected_bundle_token) { Digest::MD5.hexdigest(%w[a b].to_s) }
 
-    context 'with no existing MD5' do
-      before { arel.should_receive(:exists?).and_return(false) }
+    it 'generate a MD5 from the site packages without resolving the dependencies' do
+      PackagesDependenciesSolver.should_not_receive(:dependencies)
 
-      it 'upload the cdn file' do
-        service.should_receive(:cdn_file) { cdn_file }
-        cdn_file.should_receive(:upload)
-
-        service.generate_and_get_md5.should eq md5
-      end
-    end
-
-    context 'with an existing MD5' do
-      before { arel.should_receive(:exists?).and_return(true) }
-
-      it 'does not upload anything and return the md5' do
-        service.should_not_receive(:cdn_file)
-
-        service.generate_and_get_md5.should eq md5
-      end
+      described_class.new(site, 'stable').bundle_token.should eq expected_bundle_token
     end
   end
 
   describe '#cdn_file' do
     before do
-      service.should_receive(:_dependencies) { [['classic-player-controls', '1.0.0'], ['sony-player', '2.0.0-beta.2']] }
-      Package.should_receive(:find_by_name_and_version).with('classic-player-controls', '1.0.0') { controls }
-      Package.should_receive(:find_by_name_and_version).with('sony-player', '2.0.0-beta.2') { sony_player }
-      # service.should_receive(:packages) { [controls, sony_player] }
-      service.should_receive(:_md5) { 'abcd1234' }
+      service.should_receive(:_resolved_packages) { [controls,  sony_player] }
+      service.should_receive(:bundle_token) { 'abcd1234' }
     end
 
     it 'concatenate all the needed package' do
@@ -139,7 +128,7 @@ describe AppFileGenerator do
       EOF
     end
 
-    it 'uses the md5 as path' do
+    it 'uses the bundle_token as path' do
       service.cdn_file.path.should eq 's3/abcd1234.js'
     end
 
@@ -149,6 +138,39 @@ describe AppFileGenerator do
         'Content-Type'  => 'text/javascript',
         'x-amz-acl'     => 'public-read'
       })
+    end
+  end
+
+  describe '#generate_and_get_bundle_token' do
+    let(:original_packages) { double('AppBundle') }
+    let(:app_bundle) { double('AppBundle') }
+    before do
+      service.should_receive(:bundle_token).at_least(:twice).and_return(bundle_token)
+      service.should_receive(:_original_packages) { original_packages }
+      AppBundle.should_receive(:new).with(token: bundle_token, packages: original_packages).and_return(app_bundle)
+    end
+
+    context 'with non-existing MD5' do
+      before { app_bundle.should_receive(:save).and_return(true) }
+
+      it 'upload the cdn file' do
+        service.should_receive(:_create_loader!)
+        service.should_receive(:cdn_file) { cdn_file }
+        cdn_file.should_receive(:upload)
+
+        service.generate_and_get_bundle_token.should eq bundle_token
+      end
+    end
+
+    context 'with an existing MD5' do
+      before { app_bundle.should_receive(:save).and_return(false) }
+
+      it 'does not upload anything and return the bundle_token' do
+        service.should_not_receive(:_create_loader!)
+        service.should_not_receive(:cdn_file)
+
+        service.generate_and_get_bundle_token.should eq bundle_token
+      end
     end
   end
 

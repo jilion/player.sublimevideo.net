@@ -190,7 +190,6 @@ describe SettingsFileGenerator do
       Package.should_receive(:find_by_name_and_version).with('classic-player-controls', '1.0.0') { controls }
       Package.should_receive(:find_by_name_and_version).with('sony-player', '2.0.0-beta.2') { sony_player }
       # service.should_receive(:packages) { [controls, sony_player] }
-      service.should_receive(:_md5) { 'abcd1234' }
     end
 
     it 'concatenate all the needed package' do
@@ -201,7 +200,7 @@ describe SettingsFileGenerator do
       EOF
     end
 
-    it 'uses the md5 as path' do
+    it 'uses the token as path' do
       service.cdn_file.path.should eq 's3/abcd1234.js'
     end
 

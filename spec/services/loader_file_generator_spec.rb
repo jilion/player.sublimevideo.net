@@ -104,27 +104,15 @@ describe LoaderFileGenerator do
     end
   end
 
-  describe '#cdn_file' do
+  pending '#cdn_file' do
   end
 
-  describe '#app_md5' do
-    context ':app_md5 option is not set' do
-      let(:service) { described_class.new(site, 'stable')}
-      let(:dependencies) { [['classic-player-controls', '1.0.0'], ['sony-player', '2.0.0-beta.2']] }
-      before do
-        service.should_receive(:_dependencies) { dependencies }
-      end
+  describe '#token' do
+    context ':token option is set' do
+      let(:service) { described_class.new(site, 'stable', bundle_token: 'foobar')}
 
-      it 'calls #generate' do
-        service.app_md5.should eq Digest::MD5.digest(dependencies.to_s)
-      end
-    end
-
-    context ':delete option is set' do
-      let(:service) { described_class.new(site, 'stable', app_md5: 'foobar')}
-
-      it 'returns the given app_md5' do
-        service.app_md5.should eq 'foobar'
+      it 'returns the given app_bundle' do
+        service.bundle_token.should eq 'foobar'
       end
     end
   end

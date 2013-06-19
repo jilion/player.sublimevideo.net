@@ -21,25 +21,34 @@ class AppFileGenerator
     site = Site.find(site_token)
 
     if Stage.stages_equal_or_more_stable_than(site.accessible_stage).include?(stage)
-      app_md5 = new(site, stage).generate_and_get_md5
-      LoaderFileGeneratorWorker.perform_async(site_token, stage: stage, app_md5: app_md5)
+      bundle_token = new(site, stage).generate_and_get_bundle_token
+      LoaderFileGeneratorWorker.perform_async(site_token, stage: stage, bundle_token: bundle_token)
     end
   end
 
-  def generate_and_get_md5
-    unless AppMd5.where(md5: _md5).exists?
-      cdn_file.upload
-      _increment_librato('update')
-    end
-
-    _md5
+  def bundle_token
+    @bundle_token ||= Digest::MD5.hexdigest(_original_packages.sort.to_s)
   end
 
   def cdn_file
     @cdn_file ||= CDNFile.new(_generate_file, _path, _s3_headers)
   end
 
+  def generate_and_get_bundle_token
+    if _app_bundle.save
+      _create_loader!
+      cdn_file.upload
+      _increment_librato('update')
+    end
+
+    bundle_token
+  end
+
   private
+
+  def _app_bundle
+    @_app_bundle ||= AppBundle.new(token: bundle_token, packages: _original_packages)
+  end
 
   def _generate_file
     template_path = Rails.root.join('app', 'templates', 'app.js.erb')
@@ -50,12 +59,13 @@ class AppFileGenerator
     file
   end
 
-  def _content
-    @_content ||= _packages.reduce('') { |memo, package| memo += package.file.read }
+  # FIXME: Read the main.js file, not the zip!
+  def _binded_content
+    @_binded_content ||= _resolved_packages.reduce('') { |memo, package| memo += package.file.read }
   end
 
   def _path
-    "s3/#{_md5}.js"
+    "s3/#{bundle_token}.js"
   end
 
   def _s3_headers
@@ -66,16 +76,19 @@ class AppFileGenerator
     }
   end
 
-  def _dependencies
-    @_dependencies ||= PackagesDependenciesSolver.dependencies(site.packages(stage), stage)
+  def _original_packages
+    @_original_packages ||= site.packages(stage)
   end
 
-  def _packages
-    @_packages ||= _dependencies.map { |name, version| Package.find_by_name_and_version(name, version) }
+  def _resolved_packages
+    @_resolved_packages ||= begin
+      dependencies = PackagesDependenciesSolver.dependencies(_original_packages, stage)
+      dependencies.map { |name, version| Package.find_by_name_and_version(name, version) }
+    end
   end
 
-  def _md5
-    @_md5 ||= Digest::MD5.digest(_dependencies.sort.to_s)
+  def _create_loader!
+    Loader.create!(app_bundle: app_bundle, site_token: site.token)
   end
 
   def _increment_librato(action)

@@ -1,6 +1,6 @@
 class Package < ActiveRecord::Base
 
-  has_and_belongs_to_many :app_md5s
+  has_and_belongs_to_many :app_bundles
 
   serialize :dependencies, Hash, format: :json
 

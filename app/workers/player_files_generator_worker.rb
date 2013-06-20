@@ -1,6 +1,6 @@
 require 'sidekiq'
-require 'app_file_generator_worker'
-require 'loader_file_generator_worker'
+require 'app_manager_worker'
+require 'site_loader_manager_worker'
 require 'settings_file_generator_worker'
 
 class PlayerFilesGeneratorWorker
@@ -18,9 +18,9 @@ class PlayerFilesGeneratorWorker
     when :settings
       SettingsFileGeneratorWorker.perform_async(site_token)
     when :addons
-      AppFileGeneratorWorker.perform_async(site_token)
+      AppManagerWorker.perform_async(site_token)
     when :destroy
-      LoaderFileGeneratorWorker.perform_async(site_token, delete: true)
+      SiteLoaderManagerWorker.perform_async(site_token, nil, nil, delete: true)
       SettingsFileGeneratorWorker.perform_async(site_token, delete: true)
     end
   end

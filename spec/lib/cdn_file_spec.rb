@@ -3,7 +3,6 @@ require 'rails/railtie'
 require 'config/carrierwave' # for fog_mock
 require 'support/fixtures_helpers'
 
-require 's3_wrapper'
 require 'cdn_file'
 
 describe CDNFile, :fog_mock do
@@ -16,6 +15,7 @@ describe CDNFile, :fog_mock do
     'x-amz-acl'     => 'public-read'
   } }
   let(:cdn_file) { CDNFile.new(file, path, headers) }
+  before { S3Wrapper.delete(S3Wrapper.buckets[:sublimevideo], path) }
 
   describe "#upload" do
     it "uploads files" do
@@ -28,21 +28,21 @@ describe CDNFile, :fog_mock do
       before { cdn_file.upload }
 
       it "is public" do
-        object_acl = S3Wrapper.send(:_fog_connection).get_object_acl(ENV['S3_PACKAGES_BUCKET'], path).body
+        object_acl = S3Wrapper.send(:_fog_connection).get_object_acl(S3Wrapper.buckets[:sublimevideo], path).body
         object_acl['AccessControlList'].should include(
           {"Permission"=>"READ", "Grantee"=>{"URI"=>"http://acs.amazonaws.com/groups/global/AllUsers"}}
         )
       end
       it "have good content_type public" do
-        object_headers = S3Wrapper.head(path).headers
+        object_headers = S3Wrapper.head(S3Wrapper.buckets[:sublimevideo], path).headers
         object_headers['Content-Type'].should eq 'text/javascript'
       end
       it "have 5 min max-age cache control" do
-        object_headers = S3Wrapper.head(path).headers
+        object_headers = S3Wrapper.head(S3Wrapper.buckets[:sublimevideo], path).headers
         object_headers['Cache-Control'].should eq 'max-age=60, public'
       end
       it "have ETag" do
-        object_headers = S3Wrapper.head(path).headers
+        object_headers = S3Wrapper.head(S3Wrapper.buckets[:sublimevideo], path).headers
         object_headers['ETag'].should be_present
       end
     end

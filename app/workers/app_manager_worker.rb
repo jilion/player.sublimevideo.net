@@ -1,11 +1,11 @@
 require 'sidekiq'
-require 'app_file_generator'
+require 'site_app_manager'
 
-class AppFileGeneratorWorker
+class AppManagerWorker
   include Sidekiq::Worker
   sidekiq_options queue: 'player'
 
   def perform(site_token)
-    AppFileGenerator.update(site_token)
+    SiteAppManager.update(site_token)
   end
 end

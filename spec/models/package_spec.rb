@@ -14,7 +14,7 @@ describe Package do
   end
 
   describe 'Associations' do
-    it { should have_and_belong_to_many(:app_bundles) }
+    it { should have_and_belong_to_many(:apps) }
   end
 
   describe 'Validations' do
@@ -108,6 +108,14 @@ describe Package do
       it 'retrieves all the packages for the given addons and stage' do
         described_class.packages_from_addons('classic', addon_names, 'stable').should eq [@lightbox_package_1s, @logo_package_1s]
       end
+    end
+  end
+
+  describe '#title' do
+    let(:package) { create(:sony_player_1_0_0) }
+
+    it 'concatenates the name and version' do
+      package.title.should eq "#{package.name}-#{package.version}"
     end
   end
 

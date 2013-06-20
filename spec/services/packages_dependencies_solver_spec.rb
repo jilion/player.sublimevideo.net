@@ -27,23 +27,19 @@ describe PackagesDependenciesSolver do
 
   let!(:support_100alpha1) { create_package('support', '1.0.0-alpha.1') }
 
-  pending '.dependencies' do
+  describe '.dependencies' do
     context 'when stage is "stable"' do
       let(:initial_packages) { [] }
-      before do
-        Package.should_receive(:app_packages).with('stable') { [app_200, app_100] }
-      end
-
       context 'with no packages' do
-        it 'depends on the latest stable "app" package' do
-          described_class.dependencies(initial_packages, 'stable').should eq('app' => '2.0.0')
+        it 'depends on nothing' do
+          described_class.dependencies(initial_packages, 'stable').should eq({})
         end
       end
 
       context 'when the "app" package with no dependencies' do
         let(:initial_packages) { [app_100] }
-        it 'depends only once on the latest stable "app" package' do
-          described_class.dependencies(initial_packages, 'stable').should eq('app' => '2.0.0')
+        it 'depends on the the original package' do
+          described_class.dependencies(initial_packages, 'stable').should eq('app' => '1.0.0')
         end
       end
 
@@ -57,7 +53,7 @@ describe PackagesDependenciesSolver do
 
         context 'with no dependencies' do
           it 'depends on the latest stable "app" & "logo" packages' do
-            described_class.dependencies(initial_packages, 'stable').should eq('app' => '2.0.0', 'logo' => '1.1.0')
+            described_class.dependencies(initial_packages, 'stable').should eq('logo' => '1.1.0')
           end
         end
 
@@ -150,7 +146,6 @@ describe PackagesDependenciesSolver do
     context 'with stage is "beta"' do
       let(:initial_packages) { [logo_200beta1, logo_110, logo_100] }
       before do
-        Package.should_receive(:app_packages).with('beta') { [app_200, app_200beta1, app_100] }
         Package.stub(:packages_for_name_and_stage).with('app', 'beta') { [app_200, app_200beta1, app_100] }
         Package.stub(:packages_for_name_and_stage).with('logo', 'beta') { [logo_200beta1, logo_110, logo_100] }
       end
@@ -172,7 +167,6 @@ describe PackagesDependenciesSolver do
     context 'with stage is "alpha"' do
       let(:initial_packages) { [support_100alpha1] }
       before do
-        Package.should_receive(:app_packages).with('alpha') { [app_200, app_200beta1, app_200alpha1, app_100] }
         Package.stub(:packages_for_name_and_stage).with('app', 'alpha') { [app_200, app_200beta1, app_200alpha1, app_100] }
         Package.stub(:packages_for_name_and_stage).with('support', 'alpha') { [support_100alpha1] }
       end

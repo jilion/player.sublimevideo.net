@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class Package < ActiveRecord::Base
 
-  has_and_belongs_to_many :app_bundles
+  has_and_belongs_to_many :apps
 
   serialize :dependencies, Hash, format: :json
   serialize :settings, Hash, format: :json
@@ -42,6 +42,10 @@ class Package < ActiveRecord::Base
   # FIXME, is this method needed?
   def self.app_packages(stage = 'stable')
     packages_from_addons(nil, 'app', stage)
+  end
+
+  def title
+    "#{name}-#{version}"
   end
 
   def stage

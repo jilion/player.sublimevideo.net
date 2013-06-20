@@ -31,7 +31,9 @@ def set_fog_configuration
     region:                'us-east-1'
   }
   $fog_connection = Fog::Storage.new(provider: 'AWS')
-  $fog_connection.directories.create(key: ENV['S3_PACKAGES_BUCKET'])
+  S3Wrapper.buckets.each do |_, bucket|
+    $fog_connection.directories.create(key: bucket)
+  end
 end
 
 def set_file_configuration

@@ -26,7 +26,7 @@ describe PackageUploader, :fog_mock do
   after { File.delete(fixture_file(File.join('packages', package_name, zip_name))) }
 
   it 'saves the file in the right bucket' do
-    uploader.fog_directory.should eq ENV['S3_PACKAGES_BUCKET']
+    uploader.fog_directory.should eq S3Wrapper.buckets[:player]
   end
 
   it 'is private' do

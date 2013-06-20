@@ -1,23 +1,27 @@
 class Loader < ActiveRecord::Base
 
-  belongs_to :app_bundle
+  belongs_to :app
 
-  validates :site_token, presence: true, uniqueness: true
-
+  validates :site_token, presence: true
+  validates :app_id, uniqueness: { scope: [:site_token, :stage] }
 end
 
 # == Schema Information
 #
 # Table name: loaders
 #
-#  app_bundle_id :integer
-#  created_at    :datetime
-#  id            :integer          not null, primary key
-#  site_token    :string(255)
-#  updated_at    :datetime
+#  app_id     :integer
+#  created_at :datetime
+#  id         :integer          not null, primary key
+#  site_token :string(255)
+#  stage      :string(255)
+#  updated_at :datetime
 #
 # Indexes
 #
-#  index_loaders_on_app_bundle_id  (app_bundle_id)
+#  index_loaders_on_app_id                           (app_id)
+#  index_loaders_on_app_id_and_site_token_and_stage  (app_id,site_token,stage) UNIQUE
+#  index_loaders_on_site_token                       (site_token)
+#  index_loaders_on_site_token_and_stage             (site_token,stage)
 #
 

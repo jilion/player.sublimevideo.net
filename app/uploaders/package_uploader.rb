@@ -1,4 +1,5 @@
 require 'carrierwave/processing/mime_types'
+require 's3_wrapper'
 
 class PackageUploader < CarrierWave::Uploader::Base
   include CarrierWave::MimeTypes
@@ -6,17 +7,13 @@ class PackageUploader < CarrierWave::Uploader::Base
   process :set_content_type
 
   def fog_directory
-    ENV['S3_PACKAGES_BUCKET']
+    S3Wrapper.buckets[:player]
   end
 
   # Override the directory where uploaded files will be stored
   # This is a sensible default for uploaders that are meant to be mounted:
   def store_dir
-    if Rails.env.test?
-      'uploads/packages'
-    else
-      'packages'
-    end
+    'packages'
   end
 
   # Add a white list of extensions which are allowed to be uploaded.

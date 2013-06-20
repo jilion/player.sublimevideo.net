@@ -1,5 +1,5 @@
-require 'solve'
 require 'stage'
+require 'solve'
 
 class PackagesDependenciesSolver
 
@@ -9,11 +9,8 @@ class PackagesDependenciesSolver
 
   def initialize(initial_packages, stage)
     @stage = stage
-    # FIXME
-    # @packages = Package.app_packages(@stage) + initial_packages
-    @packages = initial_packages
-    @demands = @packages.map { |package| [package.name, '>= 0.0.0-alpha'] }.uniq
-    _build_graph
+    @demands = initial_packages.map { |package| [package.name, '>= 0.0.0-alpha'] }.uniq
+    _build_graph(initial_packages)
   end
 
   def solve
@@ -22,9 +19,9 @@ class PackagesDependenciesSolver
 
   private
 
-  def _build_graph
+  def _build_graph(packages)
     @graph = Solve::Graph.new
-    @packages.each { |package| _add_package_to_graph(package) }
+    packages.each { |package| _add_package_to_graph(package) }
   end
 
   def _add_package_to_graph(package)

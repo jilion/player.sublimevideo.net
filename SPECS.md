@@ -60,17 +60,17 @@
 | dependencies    | Text (Array)   |
 | settings        | Text (Hash)    |
 
-#### `AppBundle`
+#### `App`
 
 | Field            | Type           |
 | --------------   | -------------- |
 | token            | String         |
 
-#### `AppBundlesPackages`
+#### `AppsPackages`
 
 | Field            | Type           |
 | ---------------- | -------------- |
-| app_bundle_id    | Integer        |
+| app_id           | Integer        |
 | package_id       | Integer        |
 
 #### `Loader`
@@ -78,7 +78,7 @@
 | Field            | Type           |
 | --------------   | -------------- |
 | site_token       | String         |
-| app_bundle_id    | Integer        |
+| app_id           | Integer        |
 
 ### Definitions
 
@@ -132,7 +132,7 @@ A JS file that is the concatenation of all the packages needed by a site.
 
 #### Loader
 
-A JS file that contains the URL to the App JS file. The URL contains app-<bundle_token>.js.
+A JS file that contains the URL to the App JS file. The URL contains app-<app_token>.js.
 
 #### Settings
 
@@ -157,14 +157,14 @@ that depends on some packages or none.
 ### Workers
 
 * `PlayerFilesGeneratorWorker`
-* `AppFileGeneratorWorker`
-* `LoaderFileGeneratorWorker`
+* `AppManagerWorker`
+* `SiteLoaderManagerWorker`
 * `SettingsFileGeneratorWorker`
 
 ### Services
 
-* `AppFileGenerator`
-* `LoaderFileGenerator`
+* `AppManager`
+* `SiteLoaderManager`
 * `SettingsFileGenerator`
 
 ### Design + Addon => Package map
@@ -191,37 +191,37 @@ Typically, custom players will have only one package.
 
 TBD: We should maybe namespace the assets under their package name. e.g.:
 
-* `/a/<bundle_token>/classic-player-controls/play.png`
-* `/a/<bundle_token>/floating-player-controls/play.png`
+* `/a/<app_token>/classic-player-controls/play.png`
+* `/a/<app_token>/floating-player-controls/play.png`
 
 #### PlayerFilesGeneratorWorker
 
 This worker delegates to several workers depending on the event passed to it:
 
 * `SettingsFileGenerator` when event is `:settings`
-* `AppFileGeneratorWorker` when event is `:addons`
-* `LoaderFileGeneratorWorker` & `SettingsFileGenerator` when event is `:destroy`
+* `AppManagerWorker` when event is `:addons`
+* `SiteLoaderManagerWorker` & `SettingsFileGenerator` when event is `:destroy`
 
-#### AppBundle
+#### App
 
-When an new `AppBundle` is created, it uploads all the assets files of the
-associated packages to `/a/<bundle_token>/`.
+When an new `App` is created, it uploads all the assets files of the
+associated packages to `/a/<app_token>/`.
 
-#### AppFileGenerator
+#### AppManager
 
 1. From the list of site's add-ons and designs (from kits), it gets the list of
   packages (from the mapping table `design + add-on -> package name`).
-2. From the list of packages names, it generatess a `bundle_token` (a MD5) for
+2. From the list of packages names, it generatess a `app_token` (a MD5) for
   this array of packages (sorted).
-3. It check if an `AppBundle` exists fot this `bundle_token`.
-    * If yes, returns the `bundle_token`, the app bundle already exists!
+3. It check if an `App` exists fot this `app_token`.
+    * If yes, returns the `app_token`, the app bundle already exists!
     * If no, concatenate all the packages `main.js` files and insert them in a
-      template! It creates a new `AppBundle` record for the `bundle_token`. The
-      file is then uploaded to `/js/app-<bundle_token>.js` and return the `bundle_token`.
+      template! It creates a new `App` record for the `app_token`. The
+      file is then uploaded to `/js/app-<app_token>.js` and return the `app_token`.
 
-#### LoaderFileGenerator
+#### SiteLoaderManager
 
-1. Insert the `bundle_token` from the app generation step into the loader
+1. Insert the `app_token` from the app generation step into the loader
   template and upload it.
 
 #### SettingsFileGenerator

@@ -24,13 +24,13 @@ FactoryGirl.define do
     zip     { File.new(Rails.root.join('spec/fixtures/packages/sony-player-2.0.0-alpha.zip')) }
   end
 
-  factory :app_bundle do
-    token { 'abcd1234' }
+  factory :app do
+    sequence(:token) { |n| "#{n}" }
   end
 
   factory :loader do
     site_token { 'abcd1234' }
-    app_bundle
+    app
   end
 
 end

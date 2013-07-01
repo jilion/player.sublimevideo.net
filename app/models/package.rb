@@ -58,7 +58,7 @@ class Package < ActiveRecord::Base
     tmpfile = Tempfile.new(["main-#{name}-#{version}", '.js'])
 
     _zip_file do |z|
-      tmpfile.write(z.read("#{File.basename(zip.path, '.zip')}/main.js"))
+      tmpfile.write(z.read('main.js'))
     end
     tmpfile.rewind
 
@@ -111,7 +111,7 @@ class Package < ActiveRecord::Base
   def _dependencies_from_zip
     return {} unless zip?
 
-    @_dependencies_from_zip ||= JSON[_zip_file { |z| z.read("#{File.basename(zip.path, '.zip')}/package.json") }]['dependencies']
+    @_dependencies_from_zip ||= JSON[_zip_file { |z| z.read('package.json') }]['dependencies']
   end
 
   def _settings_from_zip

@@ -1,7 +1,6 @@
 require 'fast_spec_helper'
 require 'rails/railtie'
 require 'config/carrierwave' # for fog_mock
-require 'support/fixtures_helpers'
 
 require 'cdn_file'
 

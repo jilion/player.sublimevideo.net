@@ -46,7 +46,6 @@ describe AppManager do
     end
   end
 
-
   describe '#app_file' do
     before do
       service.should_receive(:_resolved_packages) { [controls,  sony_player] }

@@ -1,7 +1,8 @@
 require 'sidekiq'
-require 'app_manager_worker'
-require 'site_loader_manager_worker'
-require 'settings_file_generator_worker'
+require 'site_settings_manager'
+require 'site_app_manager'
+require 'site_loader_manager'
+require 'site_settings_manager'
 
 class PlayerFilesGeneratorWorker
   include Sidekiq::Worker
@@ -9,19 +10,19 @@ class PlayerFilesGeneratorWorker
 
   # @param [Symbol] event defines the event that triggered the `perform`
   #   events can be:
-  #   * `:settings` => the site has been saved or its kits settings have been saved
-  #   * `:addons`   => the site's addons have been updated
-  #   * `:destroy`  => the site has been archived
+  #   * `:settings_update` => the site has been saved or its kits settings have been saved
+  #   * `:addons_update`   => the site's addons have been updated
+  #   * `:cancellation`    => the site has been archived
   #
   def perform(site_token, event)
     case event
-    when :settings
-      SettingsFileGeneratorWorker.perform_async(site_token)
-    when :addons
-      AppManagerWorker.perform_async(site_token)
-    when :destroy
-      SiteLoaderManagerWorker.perform_async(site_token, nil, nil, delete: true)
-      SettingsFileGeneratorWorker.perform_async(site_token, delete: true)
+    when :settings_update
+      SiteSettingsManager.update(site_token)
+    when :addons_update
+      SiteAppManager.update(site_token)
+    when :cancellation
+      SiteLoaderManager.delete(site_token)
+      SiteSettingsManager.delete(site_token)
     end
   end
 end

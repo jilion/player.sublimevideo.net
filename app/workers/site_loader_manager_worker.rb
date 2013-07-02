@@ -5,7 +5,7 @@ class SiteLoaderManagerWorker
   include Sidekiq::Worker
   sidekiq_options queue: 'player'
 
-  def perform(site_token, app_token, stage, options = {})
-    SiteLoaderManager.update(site_token, app_token, stage, options)
+  def perform(site_token, app_token, stage)
+    SiteLoaderManager.update(site_token, app_token, stage)
   end
 end

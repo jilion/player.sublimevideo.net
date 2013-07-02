@@ -159,7 +159,6 @@ that depends on some packages or none.
 * `PlayerFilesGeneratorWorker`
 * `AppManagerWorker`
 * `SiteLoaderManagerWorker`
-* `SettingsFileGeneratorWorker`
 
 ### Services
 

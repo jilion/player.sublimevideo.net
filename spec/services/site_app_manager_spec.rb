@@ -6,7 +6,7 @@ Site = Class.new unless defined? Site
 Loader = Class.new unless defined? Loader
 
 describe SiteAppManager do
-  let(:site) { double('Site', token: 'abcd1234', accessible_stage: 'stable') }
+  let(:site) { double('Site', token: 'abcd1234', accessible_stage: 'beta') }
   let(:controls) { double('classic player controls', title: 'controls-1.0.0') }
   let(:sony_player) { double('sony player', title: 'sony-player-2.0.0-beta.2') }
   let(:service) { described_class.new(site, 'stable') }
@@ -15,18 +15,24 @@ describe SiteAppManager do
   let(:app) { double('App', token: app_token) }
 
   describe '.update' do
-    it 'calls .update_for_stage for each stage' do
-      Stage.stages.each do |stage|
-        described_class.should_receive(:update_for_stage).with('123', stage)
+    before do
+      Site.should_receive(:find).with(site.token) { site }
+      described_class.stub(:new) { fake_service }
+      fake_service.stub(:find_or_create) { app }
+      SiteLoaderManagerWorker.stub(:perform_async)
+    end
+
+    it 'calls .update_for_stage_and_delay_loader_update for all accessible stages' do
+      %w[beta stable].each do |stage|
+        described_class.should_receive(:update_for_stage_and_delay_loader_update).with(site, stage)
       end
 
-      described_class.update('123')
+      described_class.update(site.token)
     end
   end
 
-  describe '.update_for_stage' do
+  describe '.update_for_stage_and_delay_loader_update' do
     before do
-      Site.should_receive(:find).with('123') { site }
       described_class.stub(:new) { fake_service }
       fake_service.stub(:find_or_create) { app }
       SiteLoaderManagerWorker.stub(:perform_async)
@@ -35,56 +41,19 @@ describe SiteAppManager do
     it 'initializes a manager' do
       described_class.should_receive(:new).with(site, 'stable')
 
-      described_class.update_for_stage('123', 'stable')
+      described_class.update_for_stage_and_delay_loader_update(site, 'stable')
     end
 
-    context 'stage is "stable"' do
-      let(:stage) { 'stable' }
-      before { service.should_receive(:find_or_create).and_return(app) }
+    it 'calls #find_or_create on the manager' do
+      fake_service.should_receive(:find_or_create).and_return(app)
 
-      it 'calls #find_or_create on the manager' do
-        described_class.update_for_stage('123', stage)
-      end
-
-      it 'delays SiteLoaderManagerWorker.perform_async' do
-        SiteLoaderManagerWorker.should_receive(:perform_async).with('123', app.token, stage)
-
-        described_class.update_for_stage('123', stage)
-      end
+      described_class.update_for_stage_and_delay_loader_update(site, 'stable')
     end
 
-    context 'stage is "beta"' do
-      let(:stage) { 'beta' }
+    it 'delays SiteLoaderManagerWorker.perform_async' do
+      SiteLoaderManagerWorker.should_receive(:perform_async).with(site.token, app.token, 'stable')
 
-      it 'does not call #find_or_create on the manager' do
-        service.should_not_receive(:find_or_create)
-
-        described_class.update_for_stage('123', stage)
-      end
-
-      it 'does not delay SiteLoaderManagerWorker.perform_async' do
-        service.should_not_receive(:find_or_create)
-        SiteLoaderManagerWorker.should_not_receive(:perform_async)
-
-        described_class.update_for_stage('123', stage)
-      end
-    end
-
-    context 'stage is "alpha"' do
-      let(:stage) { 'alpha' }
-
-      it 'does not call #find_or_create on the manager' do
-        service.should_not_receive(:find_or_create)
-
-        described_class.update_for_stage('123', stage)
-      end
-
-      it 'does not delay SiteLoaderManagerWorker.perform_async' do
-        service.should_not_receive(:find_or_create)
-        SiteLoaderManagerWorker.should_not_receive(:perform_async)
-
-        described_class.update_for_stage('123', stage)
-      end
+      described_class.update_for_stage_and_delay_loader_update(site, 'stable')
     end
   end
 

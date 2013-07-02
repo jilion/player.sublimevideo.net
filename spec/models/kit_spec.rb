@@ -2,16 +2,6 @@ require 'spec_helper'
 
 describe Kit do
   let(:site_token) { 'site_token' }
-  let(:kit_hash) do
-    {
-      'design' => {
-        'name' => 'classic'
-      },
-      'identifier' => 'foo',
-      'name' => 'Foo player',
-      'settings' => {}
-    }
-  end
   let(:kit) { described_class.new(kit_hash) }
 
   describe '.all' do
@@ -25,7 +15,8 @@ describe Kit do
       kits = described_class.all(site_token: site_token)
 
       kits[0].should eq kit
-      kits[0].design['name'].should eq 'classic'
+      kits[0].design['name'].should eq 'sony'
+      kits[0].design['module'].should eq 'sony-player/sony'
     end
   end
 end

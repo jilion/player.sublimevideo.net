@@ -157,7 +157,6 @@ that depends on some packages or none.
 ### Workers
 
 * `PlayerFilesGeneratorWorker`
-* `AppManagerWorker`
 * `SiteLoaderManagerWorker`
 
 ### Services
@@ -195,11 +194,11 @@ TBD: We should maybe namespace the assets under their package name. e.g.:
 
 #### PlayerFilesGeneratorWorker
 
-This worker delegates to several workers depending on the event passed to it:
+This worker delegates to several services depending on the event passed to it:
 
-* `SettingsFileGenerator` when event is `:settings`
-* `AppManagerWorker` when event is `:addons`
-* `SiteLoaderManagerWorker` & `SettingsFileGenerator` when event is `:destroy`
+* `SiteSettingsManager` when event is `:settings_update`
+* `SiteAppManager` when event is `:addons_update`
+* `SiteLoaderManager` & `SiteSettingsManager` when event is `:cancellation`
 
 #### App
 

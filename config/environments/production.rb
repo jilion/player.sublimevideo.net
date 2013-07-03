@@ -1,5 +1,9 @@
 PlayerSublimevideo::Application.configure do
-  # Settings specified here will take precedence over those in config/application.rb.
+  # Settings specified here will take precedence over those in config/application.rb
+  config.middleware.use Rack::DeviseCookieAuth,
+    secret: ENV['COOKIE_SECRET'],
+    resource: 'admin',
+    redirect_to: 'https://admin.sublimevideo.net/login'
 
   # Code is not reloaded between requests.
   config.cache_classes = true

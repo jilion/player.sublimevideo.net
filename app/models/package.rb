@@ -9,11 +9,10 @@ class Package < ActiveRecord::Base
 
   mount_uploader :zip, PackageUploader
 
-  validates :name, :version, :zip, presence: true
+  validates :zip, :name, :version, :dependencies, :settings, presence: true
   validates :version, uniqueness: { scope: :name }
 
-  before_create :_set_dependencies
-  before_create :_set_settings
+  before_validation :_set_name, :_set_version, :_set_dependencies, :_set_settings
 
   after_touch :_clear_caches
   after_save :_clear_caches
@@ -45,7 +44,11 @@ class Package < ActiveRecord::Base
   end
 
   def title
-    "#{name}-#{version}"
+    "#{name}-#{version.gsub('.', '_')}"
+  end
+
+  def to_param
+    title
   end
 
   def stage
@@ -108,10 +111,10 @@ class Package < ActiveRecord::Base
     Zip::ZipFile.open(zip.path) { |z| yield z }
   end
 
-  def _dependencies_from_zip
+  def _package_json_from_zip
     return {} unless zip?
 
-    @_dependencies_from_zip ||= JSON[_zip_file { |z| z.read('package.json') }]['dependencies']
+    @_package_json_from_zip ||= JSON[_zip_file { |z| z.read('package.json') }]
   end
 
   def _settings_from_zip
@@ -129,8 +132,16 @@ class Package < ActiveRecord::Base
     end
   end
 
+  def _set_name
+    self.name ||= _package_json_from_zip['name']
+  end
+
+  def _set_version
+    self.version ||= _package_json_from_zip['version']
+  end
+
   def _set_dependencies
-    self.dependencies = _dependencies_from_zip
+    self.dependencies = _package_json_from_zip['dependencies']
   end
 
   def _set_settings

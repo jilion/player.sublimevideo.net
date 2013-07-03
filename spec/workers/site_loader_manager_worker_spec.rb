@@ -11,8 +11,8 @@ describe SiteLoaderManagerWorker do
   end
 
   it 'calls AppManager' do
-    SiteLoaderManager.should_receive(:update).with('abcd1234', 'foobar', 'beta', delete: true)
+    SiteLoaderManager.should_receive(:update).with('abcd1234', 'foobar', 'beta')
 
-    described_class.new.perform('abcd1234', 'foobar', 'beta', delete: true)
+    described_class.new.perform('abcd1234', 'foobar', 'beta')
   end
 end

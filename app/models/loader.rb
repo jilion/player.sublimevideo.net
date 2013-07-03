@@ -2,7 +2,7 @@ class Loader < ActiveRecord::Base
 
   belongs_to :app
 
-  validates :site_token, presence: true
+  validates :app_id, :site_token, :stage, presence: true
   validates :app_id, uniqueness: { scope: [:site_token, :stage] }
 end
 

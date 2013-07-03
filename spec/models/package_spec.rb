@@ -27,6 +27,14 @@ describe Package do
   describe 'before_create' do
     let(:package) { create(:sony_player_1_0_0) }
 
+    it 'sets the name from the package.json' do
+      package.name.should eq 'sony-player'
+    end
+
+    it 'sets the version from the package.json' do
+      package.version.should eq '1.0.0'
+    end
+
     it 'sets the dependencies from the package.json' do
       package.dependencies.should eq({
         'classic-player-controls' => '1.0.0'

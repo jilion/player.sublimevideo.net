@@ -3,23 +3,29 @@ source 'https://8dezqz7z7HWea9vtaFwg@gem.fury.io/me/' # thibaud@jilion.com accou
 
 ruby '2.0.0'
 
+# Core frameworks
 gem 'rails', '~> 4.0.0'
 gem 'serialize-rails'
 gem 'sublime_video_private_api', '~> 1.5'
 
-# Databases
-gem 'pg'
+# Views
+gem 'slim'
 
+# Databases & queues
+gem 'pg'
 gem 'sidekiq'
 
+# Assets management
 gem 'fog'
 gem 'carrierwave'
-
 gem 'rubyzip', require: 'zip/zip'
 gem 'mime-types'
 
+# Packages dependencies solving
 gem 'solve'
 
+# Third-party services integration
+gem 'tinder' # Campfire
 gem 'librato-rails', github: 'librato/librato-rails', branch: 'feature/rack_first'
 
 # Gems used only for assets and not required
@@ -45,9 +51,14 @@ group :development, :test do
 end
 
 group :development do
-  gem 'guard-rspec'
-  gem 'ruby_gntp'
+  gem 'ruby_gntp', require: false
+  gem 'guard-rspec', require: false
+
   gem 'annotate'
+  gem 'silent-postgres'
+  gem 'quiet_assets'
+  gem 'better_errors'
+  gem 'binding_of_caller'
 end
 
 group :test do
@@ -55,4 +66,7 @@ group :test do
   gem 'shoulda-matchers'
   gem 'factory_girl_rails' # loaded in spec_helper Spork.each_run
   gem 'database_cleaner'
+  gem 'webmock'
+  gem 'typhoeus'
+  gem 'vcr'
 end

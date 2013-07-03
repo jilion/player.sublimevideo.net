@@ -1,0 +1,7 @@
+h1 Packages
+
+ul
+  - @packages.each do |package|
+    li
+      = "#{package.name} – #{package.version} (#{package.created_at})"
+      = link_to 'Download zip', package_path(package, format: :zip)

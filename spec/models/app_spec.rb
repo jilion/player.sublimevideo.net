@@ -21,6 +21,15 @@ describe App do
     it { should validate_uniqueness_of(:token) }
   end
 
+  describe 'Scopes' do
+    describe '.with_package_name' do
+      it 'returns all apps using a package with the given name' do
+        create(:app, packages: [create(:sony_player_1_0_0, version: '1.0.1-alpha')])
+        described_class.with_package_name(app_with_packages.packages.first.name).to_a.should eq [app_with_packages]
+      end
+    end
+  end
+
 end
 
 # == Schema Information

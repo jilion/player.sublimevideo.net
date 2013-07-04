@@ -16,6 +16,8 @@ namespace :db do
     desc "Load all development fixtures. e.g.: rake 'db:populate:all[remy]'"
     task all: :environment do
       timed { Populate.packages }
+      timed { Populate.apps }
+      timed { Populate.loaders }
     end
   end
 

@@ -4,6 +4,12 @@ class Loader < ActiveRecord::Base
 
   validates :app_id, :site_token, :stage, presence: true
   validates :app_id, uniqueness: { scope: [:site_token, :stage] }
+
+  scope :stable,  -> { where(stage: 'stable') }
+  scope :beta,    -> { where(stage: 'beta') }
+  scope :alpha,   -> { where(stage: 'alpha') }
+  default_scope   -> { order('updated_at DESC') }
+
 end
 
 # == Schema Information

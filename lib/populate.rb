@@ -16,11 +16,26 @@ module Populate
       end
     end
 
-    def addons
-      AddonSystemPopulator.new.execute
+    def apps
+      100.times do
+        App.create!(token: _token)
+      end
+      puts "#{App.count} apps created!"
+    end
+
+    def loaders
+      apps = App.all
+      1000.times do
+        Loader.create!(app: apps.sample, site_token: _token, stage: Stage.stages.sample)
+      end
+      puts "#{Loader.count} loaders created!"
     end
 
     private
+
+    def _token
+      4.times.reduce('') { |a,e| a += ('a'..'z').to_a.sample + (0..9).to_a.sample.to_s }
+    end
 
     def delete_all_files_in_public(*paths)
       paths.each do |path|

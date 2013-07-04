@@ -18,7 +18,10 @@ class Package < ActiveRecord::Base
   after_save :_clear_caches
 
   scope :by_name, ->(name) { where(name: name.to_s) }
-  default_scope -> { order('created_at DESC') }
+  scope :stable,  -> { where("version !~* '[a-z]'") }
+  scope :beta,    -> { where("version ~* 'beta'") }
+  scope :alpha,   -> { where("version ~* 'alpha'") }
+  default_scope   -> { order('created_at DESC') }
 
   # Returns all the package that corresponds to the given `addon_names` for the
   # given a `design_name` and a `stage`.
@@ -44,11 +47,7 @@ class Package < ActiveRecord::Base
   end
 
   def title
-    "#{name}-#{version.gsub('.', '_')}"
-  end
-
-  def to_param
-    title
+    "#{name}-#{version}"
   end
 
   def stage

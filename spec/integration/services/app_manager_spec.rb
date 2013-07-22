@@ -7,7 +7,8 @@ describe AppManager do
   let(:site_hash) { { token: site_token } }
   let(:site) { Site.new(site_hash) }
   let(:service) { described_class.new('foobar', site.packages('stable'), 'stable') }
-  let(:app_file_path) { service.send(:_path).join('app.js').to_s }
+  let(:app_files) { AppFiles.new('foobar', site.packages('stable'), 'stable') }
+  let(:app_file_path) { app_files.main_file_path }
 
   before do
     stub_api_for(AddonPlan) do |stub|
@@ -17,7 +18,7 @@ describe AppManager do
       stub.get("/private_api/sites/#{site_token}/kits") { |env| [200, {}, [kit_hash].to_json] }
     end
 
-    S3Wrapper.all(S3Wrapper.buckets[:sublimevideo], prefix: service.send(:_path).to_s).files.each { |file| file.destroy }
+    S3Wrapper.all(S3Wrapper.buckets[:sublimevideo], prefix: app_files.root_path).files.each { |file| file.destroy }
   end
 
   describe '#create' do

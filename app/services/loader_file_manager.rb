@@ -12,50 +12,21 @@ class LoaderFileManager
   end
 
   def upload
-    loader_file.upload
+    cdn_loader_file.upload
   end
 
   def delete
-    CDNFile.new(nil, _path, nil).delete
+    CDNFile.new(nil, _loader_file.path, nil).delete
   end
 
-  # Binded in the template.
-  #
-  def host
-    case Rails.env
-    when 'staging'
-      '//cdn.sublimevideo-staging.net'
-    else
-      '//cdn.sublimevideo.net'
-    end
-  end
-
-  # The actual loader file that will be uploaded.
-  #
-  def loader_file
-    CDNFile.new(_loader_file_content, _path, _s3_headers)
+  def cdn_loader_file
+    CDNFile.new(_loader_file.content, _loader_file.path, _s3_headers)
   end
 
   private
 
-  def _app_token
-    app.token
-  end
-
-  def _path
-    path = "js2/#{site_token}"
-    path += "-#{stage}" unless stage == 'stable'
-
-    path.to_s + '.js'
-  end
-
-  def _loader_file_content
-    template_path = Rails.root.join('app', 'templates', "loader-#{stage}.js.erb")
-    template = ERB.new(File.new(template_path).read)
-    file = Tempfile.new(["l-#{site_token}-#{stage}", '.js'], Rails.root.join('tmp'))
-    file.print template.result(binding)
-    file.rewind
-    file
+  def _loader_file
+    @_loader_file ||= LoaderFile.new(site_token, app_token, stage)
   end
 
   def _s3_headers

@@ -5,7 +5,7 @@ describe LoaderFileManager do
   let!(:sony_player_1_0_0) { create(:sony_player_1_0_0) }
   let(:app) { create(:app) }
   let(:service) { described_class.new('abcd1234', app.token, 'stable') }
-  let(:loader_file_path) { service.send(:_path) }
+  let(:loader_file_path) { service.send(:_loader_file).path }
 
   before do
     stub_api_for(AddonPlan) do |stub|

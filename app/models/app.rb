@@ -7,6 +7,10 @@ class App < ActiveRecord::Base
 
   scope :with_package_name, ->(package_name) { includes(:packages).where(packages: { name: package_name }) }
 
+  def files
+    @files ||= AppFiles.new(token)
+  end
+
 end
 
 # == Schema Information

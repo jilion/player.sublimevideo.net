@@ -10,6 +10,10 @@ class Loader < ActiveRecord::Base
   scope :alpha,   -> { where(stage: 'alpha') }
   default_scope   -> { order('updated_at DESC') }
 
+  def file
+    @file ||= LoaderFile.new(site_token, stage)
+  end
+
 end
 
 # == Schema Information

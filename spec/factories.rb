@@ -17,7 +17,7 @@ FactoryGirl.define do
   end
 
   factory :app do
-    sequence(:token) { |n| "#{n}" }
+    sequence(:token) { |n| n.to_s }
   end
 
   factory :loader do

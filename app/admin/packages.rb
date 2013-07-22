@@ -27,6 +27,7 @@ ActiveAdmin.register Package do
 
   show title: :title do
     attributes_table do
+      row :id
       row :name
       row :version
       row :zip do

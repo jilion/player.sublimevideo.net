@@ -21,6 +21,20 @@ ActiveAdmin.register Loader do
     column :updated_at
   end
 
+  show do
+    attributes_table do
+      row :id
+      row :site_token
+      row :app do
+        link_to loader.app.token, loader.app.files.main_file_url
+      end
+      row :stage
+      row :created_at
+      row :updated_at
+    end
+    active_admin_comments
+  end
+
   controller do
     # Prevent N+1 queries
     def scoped_collection

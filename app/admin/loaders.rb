@@ -18,6 +18,7 @@ ActiveAdmin.register Loader do
       link_to loader.app.token, loader_path(loader)
     end
     column :site_token
+    column :stage
     column :updated_at
   end
 

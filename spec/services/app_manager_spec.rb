@@ -5,7 +5,7 @@ require 'app_manager'
 
 App = Class.new unless defined? App
 ActiveRecord = Class.new unless defined?(ActiveRecord)
-ActiveRecord::RecordInvalid = Class.new(StandardError) unless defined?(ActiveRecord::RecordInvalid)
+ActiveRecord::RecordInvalid = Class.new unless defined?(ActiveRecord::RecordInvalid)
 
 describe AppManager do
   let(:controls) { double('classic player controls') }
@@ -21,25 +21,13 @@ describe AppManager do
   end
 
   describe '#create' do
-    context 'when everything goes well' do
-      it 'returns true' do
-        App.should_receive(:create!).with(token: app_token, packages: original_packages)
-        AppFilesManager.should_receive(:new).with('foobar', original_packages, 'stable') { app_files_manager }
-        app_files_manager.should_receive(:upload)
-        service.should_receive(:_increment_librato).with('create.succeed')
+    it 'returns true' do
+      App.should_receive(:create!).with(token: app_token, packages: original_packages)
+      AppFilesManager.should_receive(:new).with('foobar', original_packages, 'stable') { app_files_manager }
+      app_files_manager.should_receive(:upload)
+      service.should_receive(:_increment_librato).with('create.succeed')
 
-        service.create.should be_true
-      end
-    end
-
-    context 'when app bundle is not valid' do
-      it 'returns true' do
-        App.should_receive(:create!).with(token: app_token, packages: original_packages).and_raise(ActiveRecord::RecordInvalid)
-        AppFilesManager.should_not_receive(:new)
-        service.should_receive(:_increment_librato).with('create.failed')
-
-        service.create.should be_false
-      end
+      service.create.should be_true
     end
   end
 

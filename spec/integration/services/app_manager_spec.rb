@@ -18,7 +18,7 @@ describe AppManager do
       stub.get("/private_api/sites/#{site_token}/kits") { |env| [200, {}, [kit_hash].to_json] }
     end
 
-    S3Wrapper.all(S3Wrapper.buckets[:sublimevideo], prefix: app_files.root_path).files.each { |file| file.destroy }
+    S3Wrapper.all(S3Wrapper.buckets[:sublimevideo], prefix: app_files.root_path.to_s).files.each { |file| file.destroy }
   end
 
   describe '#create' do
@@ -107,28 +107,8 @@ describe AppManager do
       it 'delete all packages assets' do
         service.delete
 
-        S3Wrapper.all(S3Wrapper.buckets[:sublimevideo], prefix: service.send(:_path).to_s).files.should be_empty
+        S3Wrapper.all(S3Wrapper.buckets[:sublimevideo], prefix: app_files.root_path.to_s).files.should be_empty
       end
-    end
-  end
-
-  describe '#app_file' do
-    before { service.create }
-
-    it 'concatenate all the needed package' do
-      app_file = S3Wrapper.get(S3Wrapper.buckets[:sublimevideo], app_file_path).body
-
-      app_file.gsub(/\s+\Z/, '').should eq <<-EOF.gsub(/^\s+/, '').gsub(/\s+\Z/, '')
-        /*! SublimeVideo settings | (c) 2013 Jilion SA | http://sublimevideo.net */
-        // sony-player 1.0.0
-        // classic-player-controls 1.0.0
-      EOF
-    end
-
-    it 'sets the right headers' do
-      app_file_headers = S3Wrapper.head(S3Wrapper.buckets[:sublimevideo], app_file_path).headers
-      app_file_headers['Cache-Control'].should eq 'max-age=29030400, public'
-      app_file_headers['Content-Type'].should eq 'text/javascript'
     end
   end
 

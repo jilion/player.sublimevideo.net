@@ -8,7 +8,7 @@
   ],
   "dependencies": {
     "app": "2.0.0",
-    "player-controls": "1.0.0"
+    "classic-player-controls": "1.0.0"
   },
   "devDependencies": {
     "<test-framework-name>": "<version>"

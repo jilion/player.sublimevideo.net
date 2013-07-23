@@ -9,7 +9,7 @@ class Package < ActiveRecord::Base
 
   mount_uploader :zip, PackageUploader
 
-  validates :zip, :name, :version, :dependencies, :settings, presence: true
+  validates :zip, :name, :version, :settings, presence: true
   validates :version, uniqueness: { scope: :name }
 
   before_validation :_set_name, :_set_version, :_set_dependencies, :_set_settings

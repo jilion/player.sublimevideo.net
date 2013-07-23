@@ -64,19 +64,22 @@ describe SiteAppManager do
 
   describe '#find_or_create' do
     context 'app does not exist' do
-      it 'creates it' do
+      let(:app_manager) { double('AppManager') }
+
+      it 'delegates the app creation to AppManager' do
         service.app.should be_nil
 
-        service.find_or_create
+        AppManager.should_receive(:new).with(service.app_token, service.send(:_original_packages), 'stable') { app_manager }
+        app_manager.should_receive(:create)
 
-        service.app.should be_present
+        service.find_or_create
       end
     end
 
     context 'app already exists' do
-      before { service.find_or_create }
+      before { service.stub(:app) { true } }
 
-      it 'updates the loader' do
+      it 'does not delegate the app creation to AppManager' do
         service.app.should be_present
 
         AppManager.should_not_receive(:new)
